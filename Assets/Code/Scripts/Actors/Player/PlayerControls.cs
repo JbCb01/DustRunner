@@ -111,9 +111,18 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""Attack"",
+                    ""name"": ""Use"",
                     ""type"": ""Button"",
                     ""id"": ""6c2ab1b8-8984-453a-af3d-a3c78ae1679a"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""AltUse"",
+                    ""type"": ""Button"",
+                    ""id"": ""40ba529a-f727-4ddc-9db8-06248bb1c804"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -123,7 +132,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""name"": ""Interact"",
                     ""type"": ""Button"",
                     ""id"": ""852140f2-7766-474d-8707-702459ba45f3"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": ""Hold"",
                     ""initialStateCheck"": false
@@ -132,7 +141,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""name"": ""Crouch"",
                     ""type"": ""Button"",
                     ""id"": ""27c5f898-bc57-4ee1-8800-db469aca5fe3"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -178,6 +187,24 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""type"": ""Button"",
                     ""id"": ""83c5b815-14a5-4002-aebd-86fd9e7d1b32"",
                     ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SwitchSlot"",
+                    ""type"": ""Button"",
+                    ""id"": ""d05e924f-1e88-47f4-a05a-ce912c877530"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ScrollSlot"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""5118e898-de10-472e-8a99-dc4649bd92c8"",
+                    ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -356,7 +383,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",
-                    ""action"": ""Attack"",
+                    ""action"": ""Use"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -367,7 +394,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
-                    ""action"": ""Attack"",
+                    ""action"": ""Use"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -378,7 +405,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Touch"",
-                    ""action"": ""Attack"",
+                    ""action"": ""Use"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -389,7 +416,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Joystick"",
-                    ""action"": ""Attack"",
+                    ""action"": ""Use"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -400,7 +427,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""XR"",
-                    ""action"": ""Attack"",
+                    ""action"": ""Use"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -411,7 +438,18 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
-                    ""action"": ""Attack"",
+                    ""action"": ""Use"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""363efad7-39c8-4dee-8a95-34fa547ff09c"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""AltUse"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -577,6 +615,127 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""Pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c9ddf655-371b-428c-b4cc-e6bfb34c7f4b"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""SwitchSlot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ebc87a3a-6698-49cd-a349-300e5f0db463"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""SwitchSlot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d3474a10-5dcd-4631-b79a-b4dfa8686a0e"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""SwitchSlot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2682cf1a-fe95-43e9-95e4-9afd96b89e6c"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""SwitchSlot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1ac078af-cd71-4cc7-a22a-026d6857cc02"",
+                    ""path"": ""<Keyboard>/5"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""SwitchSlot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""97a32adf-18ef-4f7f-8081-530572f5a9fc"",
+                    ""path"": ""<Keyboard>/6"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""SwitchSlot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""db60bc1d-3854-49d2-a2d2-559c67d2d910"",
+                    ""path"": ""<Keyboard>/7"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""SwitchSlot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c138cbfc-99e1-467d-a30e-c4b35553be65"",
+                    ""path"": ""<Keyboard>/8"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""SwitchSlot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e1a5dfca-112c-4a69-8010-2d3b864f7a2e"",
+                    ""path"": ""<Keyboard>/9"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""SwitchSlot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""41fa7d4c-1050-4460-9685-2ab48ae350ad"",
+                    ""path"": ""<Keyboard>/0"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""SwitchSlot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8ca4b0cd-6049-48f9-9b77-9fb960f5f693"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""ScrollSlot"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1166,7 +1325,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
-        m_Player_Attack = m_Player.FindAction("Attack", throwIfNotFound: true);
+        m_Player_Use = m_Player.FindAction("Use", throwIfNotFound: true);
+        m_Player_AltUse = m_Player.FindAction("AltUse", throwIfNotFound: true);
         m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
         m_Player_Crouch = m_Player.FindAction("Crouch", throwIfNotFound: true);
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
@@ -1174,6 +1334,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player_Next = m_Player.FindAction("Next", throwIfNotFound: true);
         m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
         m_Player_Pause = m_Player.FindAction("Pause", throwIfNotFound: true);
+        m_Player_SwitchSlot = m_Player.FindAction("SwitchSlot", throwIfNotFound: true);
+        m_Player_ScrollSlot = m_Player.FindAction("ScrollSlot", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1269,7 +1431,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_Move;
     private readonly InputAction m_Player_Look;
-    private readonly InputAction m_Player_Attack;
+    private readonly InputAction m_Player_Use;
+    private readonly InputAction m_Player_AltUse;
     private readonly InputAction m_Player_Interact;
     private readonly InputAction m_Player_Crouch;
     private readonly InputAction m_Player_Jump;
@@ -1277,6 +1440,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Next;
     private readonly InputAction m_Player_Sprint;
     private readonly InputAction m_Player_Pause;
+    private readonly InputAction m_Player_SwitchSlot;
+    private readonly InputAction m_Player_ScrollSlot;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -1297,9 +1462,13 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Look => m_Wrapper.m_Player_Look;
         /// <summary>
-        /// Provides access to the underlying input action "Player/Attack".
+        /// Provides access to the underlying input action "Player/Use".
         /// </summary>
-        public InputAction @Attack => m_Wrapper.m_Player_Attack;
+        public InputAction @Use => m_Wrapper.m_Player_Use;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/AltUse".
+        /// </summary>
+        public InputAction @AltUse => m_Wrapper.m_Player_AltUse;
         /// <summary>
         /// Provides access to the underlying input action "Player/Interact".
         /// </summary>
@@ -1328,6 +1497,14 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Pause".
         /// </summary>
         public InputAction @Pause => m_Wrapper.m_Player_Pause;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/SwitchSlot".
+        /// </summary>
+        public InputAction @SwitchSlot => m_Wrapper.m_Player_SwitchSlot;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/ScrollSlot".
+        /// </summary>
+        public InputAction @ScrollSlot => m_Wrapper.m_Player_ScrollSlot;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1360,9 +1537,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Look.started += instance.OnLook;
             @Look.performed += instance.OnLook;
             @Look.canceled += instance.OnLook;
-            @Attack.started += instance.OnAttack;
-            @Attack.performed += instance.OnAttack;
-            @Attack.canceled += instance.OnAttack;
+            @Use.started += instance.OnUse;
+            @Use.performed += instance.OnUse;
+            @Use.canceled += instance.OnUse;
+            @AltUse.started += instance.OnAltUse;
+            @AltUse.performed += instance.OnAltUse;
+            @AltUse.canceled += instance.OnAltUse;
             @Interact.started += instance.OnInteract;
             @Interact.performed += instance.OnInteract;
             @Interact.canceled += instance.OnInteract;
@@ -1384,6 +1564,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Pause.started += instance.OnPause;
             @Pause.performed += instance.OnPause;
             @Pause.canceled += instance.OnPause;
+            @SwitchSlot.started += instance.OnSwitchSlot;
+            @SwitchSlot.performed += instance.OnSwitchSlot;
+            @SwitchSlot.canceled += instance.OnSwitchSlot;
+            @ScrollSlot.started += instance.OnScrollSlot;
+            @ScrollSlot.performed += instance.OnScrollSlot;
+            @ScrollSlot.canceled += instance.OnScrollSlot;
         }
 
         /// <summary>
@@ -1401,9 +1587,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Look.started -= instance.OnLook;
             @Look.performed -= instance.OnLook;
             @Look.canceled -= instance.OnLook;
-            @Attack.started -= instance.OnAttack;
-            @Attack.performed -= instance.OnAttack;
-            @Attack.canceled -= instance.OnAttack;
+            @Use.started -= instance.OnUse;
+            @Use.performed -= instance.OnUse;
+            @Use.canceled -= instance.OnUse;
+            @AltUse.started -= instance.OnAltUse;
+            @AltUse.performed -= instance.OnAltUse;
+            @AltUse.canceled -= instance.OnAltUse;
             @Interact.started -= instance.OnInteract;
             @Interact.performed -= instance.OnInteract;
             @Interact.canceled -= instance.OnInteract;
@@ -1425,6 +1614,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Pause.started -= instance.OnPause;
             @Pause.performed -= instance.OnPause;
             @Pause.canceled -= instance.OnPause;
+            @SwitchSlot.started -= instance.OnSwitchSlot;
+            @SwitchSlot.performed -= instance.OnSwitchSlot;
+            @SwitchSlot.canceled -= instance.OnSwitchSlot;
+            @ScrollSlot.started -= instance.OnScrollSlot;
+            @ScrollSlot.performed -= instance.OnScrollSlot;
+            @ScrollSlot.canceled -= instance.OnScrollSlot;
         }
 
         /// <summary>
@@ -1740,12 +1935,19 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnLook(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "Attack" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "Use" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnAttack(InputAction.CallbackContext context);
+        void OnUse(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "AltUse" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnAltUse(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "Interact" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
@@ -1795,6 +1997,20 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnPause(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "SwitchSlot" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSwitchSlot(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "ScrollSlot" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnScrollSlot(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

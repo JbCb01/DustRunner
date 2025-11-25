@@ -25,9 +25,18 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Attack",
+                    "name": "Use",
                     "type": "Button",
                     "id": "6c2ab1b8-8984-453a-af3d-a3c78ae1679a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "AltUse",
+                    "type": "Button",
+                    "id": "40ba529a-f727-4ddc-9db8-06248bb1c804",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -37,7 +46,7 @@
                     "name": "Interact",
                     "type": "Button",
                     "id": "852140f2-7766-474d-8707-702459ba45f3",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "Hold",
                     "initialStateCheck": false
@@ -46,7 +55,7 @@
                     "name": "Crouch",
                     "type": "Button",
                     "id": "27c5f898-bc57-4ee1-8800-db469aca5fe3",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -92,6 +101,24 @@
                     "type": "Button",
                     "id": "83c5b815-14a5-4002-aebd-86fd9e7d1b32",
                     "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SwitchSlot",
+                    "type": "Button",
+                    "id": "d05e924f-1e88-47f4-a05a-ce912c877530",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "ScrollSlot",
+                    "type": "PassThrough",
+                    "id": "5118e898-de10-472e-8a99-dc4649bd92c8",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -270,7 +297,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Attack",
+                    "action": "Use",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -281,7 +308,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Attack",
+                    "action": "Use",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -292,7 +319,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Touch",
-                    "action": "Attack",
+                    "action": "Use",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -303,7 +330,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Joystick",
-                    "action": "Attack",
+                    "action": "Use",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -314,7 +341,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "XR",
-                    "action": "Attack",
+                    "action": "Use",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -325,7 +352,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Attack",
+                    "action": "Use",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "363efad7-39c8-4dee-8a95-34fa547ff09c",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "AltUse",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -491,6 +529,127 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c9ddf655-371b-428c-b4cc-e6bfb34c7f4b",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SwitchSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ebc87a3a-6698-49cd-a349-300e5f0db463",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SwitchSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d3474a10-5dcd-4631-b79a-b4dfa8686a0e",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SwitchSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2682cf1a-fe95-43e9-95e4-9afd96b89e6c",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SwitchSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1ac078af-cd71-4cc7-a22a-026d6857cc02",
+                    "path": "<Keyboard>/5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SwitchSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "97a32adf-18ef-4f7f-8081-530572f5a9fc",
+                    "path": "<Keyboard>/6",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SwitchSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "db60bc1d-3854-49d2-a2d2-559c67d2d910",
+                    "path": "<Keyboard>/7",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SwitchSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c138cbfc-99e1-467d-a30e-c4b35553be65",
+                    "path": "<Keyboard>/8",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SwitchSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e1a5dfca-112c-4a69-8010-2d3b864f7a2e",
+                    "path": "<Keyboard>/9",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SwitchSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "41fa7d4c-1050-4460-9685-2ab48ae350ad",
+                    "path": "<Keyboard>/0",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SwitchSlot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8ca4b0cd-6049-48f9-9b77-9fb960f5f693",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "ScrollSlot",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

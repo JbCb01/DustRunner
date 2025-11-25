@@ -10,6 +10,7 @@ public class PlayerInteraction : MonoBehaviour
     public Transform HoldPoint;
     public LayerMask GrabLayers;
     public LayerMask InteractionLayers;
+    public LayerMask EquipableLayers;
 
     public Usable CurrentUsable { get; private set; }
     public Grabbable CurrentGrabbedObject { get; private set; }
@@ -36,6 +37,15 @@ public class PlayerInteraction : MonoBehaviour
             if (hit.collider.TryGetComponent<Usable>(out var usable))
             {
                 if (usable.IsUsable) CurrentUsable = usable;
+            }
+        }
+
+        // Scan for equipable items
+        if (Physics.Raycast(ray, out RaycastHit equipHit, InteractionRange, EquipableLayers, QueryTriggerInteraction.Collide))
+        {
+            if (equipHit.collider.TryGetComponent<Equipable>(out var equipable))
+            {
+                // We can show a UI prompt here if we want
             }
         }
     }
@@ -73,6 +83,7 @@ public class PlayerInteraction : MonoBehaviour
         if (interactPressed && CurrentGrabbedObject == null)
         {
             if (TryGrabObject()) return;
+            if (TryEquipObject()) return;
             
             if (CurrentUsable != null)
             {
@@ -94,6 +105,23 @@ public class PlayerInteraction : MonoBehaviour
                 CurrentGrabbedObject = grabbable;
                 CurrentGrabbedObject.BeginGrab(hit.point); // Grab EXACTLY where we clicked
                 return true;
+            }
+        }
+        return false;
+    }
+
+    private bool TryEquipObject()
+    {
+        Ray ray = new(Player.Camera.Main.transform.position, Player.Camera.Main.transform.forward);
+        if (Physics.Raycast(ray, out RaycastHit hit, InteractionRange, EquipableLayers))
+        {
+            if (hit.collider.TryGetComponent<Equipable>(out var equipable))
+            {
+                if (Player.Inventory.AddItem(equipable))
+                {
+                    Debug.Log("Equipped object: " + equipable.name);
+                    return true;
+                }
             }
         }
         return false;

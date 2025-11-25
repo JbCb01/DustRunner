@@ -1667,6 +1667,7 @@ GameObject:
   - component: {fileID: 2004654830}
   - component: {fileID: 2004654831}
   - component: {fileID: 2004654832}
+  - component: {fileID: 2004654833}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -1803,6 +1804,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
   Controller: {fileID: 2004654828}
+  Inventory: {fileID: 2004654833}
   Interaction: {fileID: 2004654831}
   UI: {fileID: 2004654832}
   Camera: {fileID: 2004654830}
@@ -1846,6 +1848,9 @@ MonoBehaviour:
   InteractionLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+  EquipableLayers:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &2004654832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1867,6 +1872,21 @@ MonoBehaviour:
   InteractionDotRadius: 4
   DefaultColor: {r: 1, g: 1, b: 1, a: 1}
   InteractionColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &2004654833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004654821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 038917aab274d754d8b9136107fde310, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInventory
+  Player: {fileID: 2004654829}
+  MaxSlots: 10
+  EquipPoint: {fileID: 1798112667}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

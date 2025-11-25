@@ -13,12 +13,14 @@ public struct PlayerCharacterInputs
 
 [RequireComponent(typeof(PlayerController))]
 [RequireComponent(typeof(PlayerInteraction))]
+[RequireComponent(typeof(PlayerInventory))]
 [RequireComponent(typeof(PlayerUI))]
 [RequireComponent(typeof(PlayerCamera))]
 public class Player : MonoBehaviour
 {
     [Header("Components")]
     public PlayerController Controller;
+    public PlayerInventory Inventory;
     public PlayerInteraction Interaction;
     public PlayerUI UI;
     public PlayerCamera Camera;
@@ -33,6 +35,7 @@ public class Player : MonoBehaviour
     {
         Controller.Initialize(this);
         Interaction.Initialize(this);
+        Inventory.Initialize(this);
         UI.Initialize(this);
 
         Input = new PlayerControls();
@@ -106,6 +109,18 @@ public class Player : MonoBehaviour
         bool interactPressed = Input.Player.Interact.WasPressedThisFrame();
         bool interactHeld = Input.Player.Interact.IsPressed();
         Vector2 moveInput = Input.Player.Move.ReadValue<Vector2>();
+
+        bool primaryUse = Input.Player.Use.WasPressedThisFrame();
+        bool secondaryUse = Input.Player.AltUse.WasPressedThisFrame(); // Assuming Aim is Right-Click
+        
+        float scrollDelta = Input.Player.ScrollSlot.ReadValue<Vector2>().y;
+
+        int slotToSelect = -1;
+        if (Input.Player.SwitchSlot.WasPressedThisFrame())
+        {
+            var control = Input.Player.SwitchSlot.activeControl;
+            if (control != null) slotToSelect = GetSlotFromControl(control);
+        }
         
         PlayerCharacterInputs characterInputs = new()
         {
@@ -118,9 +133,28 @@ public class Player : MonoBehaviour
 
         Controller.SetInputs(ref characterInputs);
         Interaction.SetInputs(interactPressed, interactHeld);
+        Inventory.SetInputs(primaryUse, secondaryUse, scrollDelta, slotToSelect);
     }
     public T GetState<T>() where T : State<Player>
     {
         return (T)States[typeof(T)];
+    }
+
+    private int GetSlotFromControl(UnityEngine.InputSystem.InputControl control)
+    {
+        switch (control.name)
+        {
+            case "1": return 0;
+            case "2": return 1;
+            case "3": return 2;
+            case "4": return 3;
+            case "5": return 4;
+            case "6": return 5;
+            case "7": return 6;
+            case "8": return 7;
+            case "9": return 8;
+            case "0": return 9;
+            default: return -1;
+        }
     }
 }
