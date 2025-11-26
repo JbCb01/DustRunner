@@ -2,14 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct PlayerCharacterInputs
-{
-    public Vector2 MoveInput;
-    public bool JumpDown;
-    public bool CrouchDown;
-    public bool CrouchUp;
-    public Quaternion CameraRotation;
-}
 
 [RequireComponent(typeof(PlayerController))]
 [RequireComponent(typeof(PlayerInteraction))]
@@ -26,10 +18,16 @@ public class Player : MonoBehaviour
     public PlayerCamera Camera;
     public Transform Head;
 
+    [Header("Configuration")]
+    public PlayerSettings Settings;
 
     public PlayerControls Input { get; private set; }
     public StateMachine<Player> StateMachine { get; private set; }
     public Dictionary<Type, State<Player>> States { get; private set; }
+
+    public GroundState GroundState { get; private set; }
+    public AirborneState AirborneState { get; private set; }
+    public ClimbingState ClimbingState { get; private set; }
 
     private void Awake()
     {
@@ -40,20 +38,14 @@ public class Player : MonoBehaviour
 
         Input = new PlayerControls();
         StateMachine = new StateMachine<Player>(this);
-        States = new Dictionary<Type, State<Player>>
-        {
-            [typeof(Idle)] = new Idle(this, StateMachine),
-            [typeof(Move)] = new Move(this, StateMachine),
-            [typeof(Sprint)] = new Sprint(this, StateMachine),
-            [typeof(Fall)] = new Fall(this, StateMachine),
-            [typeof(Crouch)] = new Crouch(this, StateMachine),
-            [typeof(Jump)] = new Jump(this, StateMachine)
-        };
+        GroundState = new GroundState(this, StateMachine);
+        AirborneState = new AirborneState(this, StateMachine);
+        ClimbingState = new ClimbingState(this, StateMachine);
     }
 
     private void Start()
     {
-        StateMachine.Initialize(GetState<Idle>());
+        StateMachine.Initialize(GroundState);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -72,7 +64,7 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        StateMachine.Update();
+        StateMachine.LogicUpdate();
 
         HandlePause();
         HandleInput();
@@ -82,7 +74,7 @@ public class Player : MonoBehaviour
     
     private void FixedUpdate()
     {
-        StateMachine.FixedUpdate();
+        StateMachine.PhysicsUpdate();
     }
 
     private void HandlePause()
@@ -102,17 +94,16 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void HandleInput()
+    private void HandleInput() // FIXME: Remove this completly (Single Responsibility Principle)
     {
-        if (Controller == null || Interaction == null) return;
+        if (Interaction == null || Inventory == null) return;
 
         bool interactPressed = Input.Player.Interact.WasPressedThisFrame();
         bool interactHeld = Input.Player.Interact.IsPressed();
-        Vector2 moveInput = Input.Player.Move.ReadValue<Vector2>();
+        Interaction.SetInputs(interactPressed, interactHeld);
 
         bool primaryUse = Input.Player.Use.WasPressedThisFrame();
-        bool secondaryUse = Input.Player.AltUse.WasPressedThisFrame(); // Assuming Aim is Right-Click
-        
+        bool secondaryUse = Input.Player.AltUse.WasPressedThisFrame();
         float scrollDelta = Input.Player.ScrollSlot.ReadValue<Vector2>().y;
 
         int slotToSelect = -1;
@@ -121,18 +112,6 @@ public class Player : MonoBehaviour
             var control = Input.Player.SwitchSlot.activeControl;
             if (control != null) slotToSelect = GetSlotFromControl(control);
         }
-        
-        PlayerCharacterInputs characterInputs = new()
-        {
-            MoveInput = moveInput,
-            JumpDown = Input.Player.Jump.WasPressedThisFrame(),
-            CrouchDown = Input.Player.Crouch.WasPressedThisFrame(),
-            CrouchUp = Input.Player.Crouch.WasReleasedThisFrame(),
-            CameraRotation = Camera.Main != null ? Camera.Main.transform.rotation : Quaternion.identity
-        };
-
-        Controller.SetInputs(ref characterInputs);
-        Interaction.SetInputs(interactPressed, interactHeld);
         Inventory.SetInputs(primaryUse, secondaryUse, scrollDelta, slotToSelect);
     }
     public T GetState<T>() where T : State<Player>

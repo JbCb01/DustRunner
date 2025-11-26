@@ -1770,27 +1770,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5d387ebfef37a84686a3deec732155c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  Player: {fileID: 0}
   Motor: {fileID: 2004654827}
-  CapsuleRadius: 0.5
-  CapsuleHeight: 2
-  CrouchedCapsuleHeight: 1.2
-  WalkStableMoveSpeed: 6
-  SprintStableMoveSpeed: 9
-  CrouchStableMoveSpeed: 3
-  WalkAirMoveSpeed: 6
-  SprintAirMoveSpeed: 8
-  StableMovementSharpness: 15
-  AirAccelerationSpeed: 15
-  Drag: 0.1
-  Gravity: {x: 0, y: -30, z: 0}
-  OrientationSharpness: 10
-  AllowJumpingWhenSliding: 0
-  JumpUpSpeed: 12
-  JumpScalableForwardSpeed: 10
-  JumpPreGroundingGraceTime: 0
-  JumpPostGroundingGraceTime: 0.15
-  MeshRoot: {fileID: 1948071572}
-  IgnoredColliders: []
 --- !u!114 &2004654829
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1809,6 +1790,20 @@ MonoBehaviour:
   UI: {fileID: 2004654832}
   Camera: {fileID: 2004654830}
   Head: {fileID: 1060527854}
+  Settings:
+    WalkSpeed: 6
+    SprintSpeed: 10
+    CrouchSpeed: 5
+    ClimbSpeed: 4
+    GroundMovementSharpness: 15
+    AirAccelerationSpeed: 10
+    RotationSpeed: 15
+    Gravity: {x: 0, y: -30, z: 0}
+    Drag: 0.1
+    JumpHeight: 1.5
+    StandHeight: 2
+    CrouchHeight: 1.2
+    CapsuleRadius: 0.5
 --- !u!114 &2004654830
 MonoBehaviour:
   m_ObjectHideFlags: 0

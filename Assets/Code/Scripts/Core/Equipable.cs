@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class Equipable : MonoBehaviour
+public class Equipable : MonoBehaviour
 {
     public PlayerInventory Inventory { get; private set; }
 
