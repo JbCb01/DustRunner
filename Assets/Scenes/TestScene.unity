@@ -496,7 +496,7 @@ Transform:
   m_GameObject: {fileID: 646363128}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.93899, y: 1.8000001, z: 8.576}
+  m_LocalPosition: {x: 1.93899, y: 1.9, z: 8.576}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -646,6 +646,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &846392656 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+  m_PrefabInstance: {fileID: 1198512111}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &846392658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 846392656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d59a7972ab50504f955ba12c9259d98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Equipable
 --- !u!1 &961899954
 GameObject:
   m_ObjectHideFlags: 0
@@ -862,7 +879,7 @@ Transform:
   m_GameObject: {fileID: 1060527853}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.7, z: 0}
+  m_LocalPosition: {x: 0, y: 1.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1068,6 +1085,66 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1198512111
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.0240057
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 14.401577
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      propertyPath: m_Name
+      value: WestGun
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 846392658}
+  m_SourcePrefab: {fileID: 100100000, guid: 4c97fde3a21c6f04bba9c0fcfdac21e0, type: 3}
 --- !u!1 &1499198338
 GameObject:
   m_ObjectHideFlags: 0
@@ -1802,7 +1879,9 @@ MonoBehaviour:
     Drag: 0.1
     JumpHeight: 1.5
     StandHeight: 2
+    StandCameraHeight: 1.8
     CrouchHeight: 1.2
+    CrouchCameraHeight: 1.2
     CapsuleRadius: 0.5
 --- !u!114 &2004654830
 MonoBehaviour:
@@ -1895,3 +1974,4 @@ SceneRoots:
   - {fileID: 1853215073}
   - {fileID: 1186337026}
   - {fileID: 1023849941}
+  - {fileID: 1198512111}

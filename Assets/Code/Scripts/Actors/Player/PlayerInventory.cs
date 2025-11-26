@@ -5,7 +5,7 @@ public class PlayerInventory : MonoBehaviour
     public Player Player;
 
     [Header("Settings")]
-    public int MaxSlots = 10;
+    public int MaxSlots = 4;
     public Transform EquipPoint;
 
     private Equipable[] _slots;
@@ -33,18 +33,15 @@ public class PlayerInventory : MonoBehaviour
             }
         }
 
-        if (scrollDelta > 0)
-        {
-            SelectNextSlot();
-        }
-        else if (scrollDelta < 0)
-        {
-            SelectPreviousSlot();
-        }
-
+        // 2. Handle Switching
         if (slotToSelect != -1)
         {
             SelectSlot(slotToSelect);
+        }
+        else if (Mathf.Abs(scrollDelta) > 0.01f)
+        {
+            if (scrollDelta > 0) SelectNextSlot();
+            else SelectPreviousSlot();
         }
     }
 
@@ -57,7 +54,16 @@ public class PlayerInventory : MonoBehaviour
                 _slots[i] = item;
                 item.transform.SetParent(EquipPoint);
                 item.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-                item.gameObject.SetActive(false);
+                
+                // If we picked up an item and hold nothing, equip it immediately
+                if (CurrentEquippedItem == null)
+                {
+                    SelectSlot(i);
+                }
+                else
+                {
+                    item.gameObject.SetActive(false);
+                }
                 return true;
             }
         }
@@ -89,9 +95,15 @@ public class PlayerInventory : MonoBehaviour
         if (CurrentEquippedItem != null)
         {
             CurrentEquippedItem.OnUnequip();
+            
+            // Logic to spawn physical object in world would go here
+            // e.g. Instantiate(CurrentEquippedItem.DropPrefab, ...)
+            
+            // For now, just destroy/remove logic
+            Destroy(CurrentEquippedItem.gameObject); // Or Object Pooling return
+            
             _slots[_currentSlotIndex] = null;
             CurrentEquippedItem = null;
-            _currentSlotIndex = -1;
         }
     }
 

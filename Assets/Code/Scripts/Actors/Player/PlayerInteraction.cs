@@ -95,7 +95,6 @@ public class PlayerInteraction : MonoBehaviour
     private bool TryGrabObject()
     {
         Ray ray = new(Player.Camera.Main.transform.position, Player.Camera.Main.transform.forward);
-        // Specific Raycast for physical objects (Props)
         if (Physics.Raycast(ray, out RaycastHit hit, InteractionRange, GrabLayers))
         {
             if (hit.collider.attachedRigidbody != null && 

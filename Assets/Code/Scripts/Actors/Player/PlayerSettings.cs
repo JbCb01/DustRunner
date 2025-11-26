@@ -22,6 +22,8 @@ public class PlayerSettings
 
     [Header("Dimensions")]
     public float StandHeight = 2f;
-    public float CrouchHeight = 1.2f;
+    public float StandCameraHeight = 1.8f;
+    public float CrouchHeight = 1.4f;
+    public float CrouchCameraHeight = 1.2f;
     public float CapsuleRadius = 0.5f;
 }
