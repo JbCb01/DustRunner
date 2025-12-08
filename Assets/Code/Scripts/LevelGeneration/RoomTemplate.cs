@@ -3,30 +3,47 @@ using UnityEngine;
 
 namespace DustRunner.LevelGeneration
 {
+    public enum DoorDirection
+    {
+        Up,     // Z+
+        Down,   // Z-
+        Left,   // X-
+        Right   // X+
+    }
+
+    [System.Serializable]
+    public class DoorDefinition
+    {
+        public Vector2Int Position; // Local Grid Coords (np. 0,0)
+        public DoorDirection Direction; // W którą stronę wychodzimy?
+    }
+
     public class RoomTemplate : MonoBehaviour
     {
         [Header("Settings")]
         public Vector2Int Size = new Vector2Int(2, 2);
         
-        [Tooltip("Local grid coordinates for doors. (0,0) is bottom-left corner.")]
-        public List<Vector2Int> DoorPositions;
+        [Header("Connectivity")]
+        [Tooltip("Define exact door positions and their exit direction.")]
+        public List<DoorDefinition> Doors;
 
         [Header("Debug")]
         [SerializeField] private bool _showGizmos = true;
         [SerializeField] private Color _boundsColor = new Color(0, 1, 0, 0.4f);
         [SerializeField] private Color _doorColor = new Color(0, 0, 1, 0.8f);
+        [SerializeField] private Color _directionColor = new Color(1, 1, 0, 1f);
 
         private void OnDrawGizmos()
         {
             if (!_showGizmos) return;
 
-            float unitSize = 5f; // Must match generator unit size
+            float unitSize = 5f; 
 
-            // 1. Draw Bounds
             Gizmos.color = _boundsColor;
             Matrix4x4 oldMatrix = Gizmos.matrix;
             Gizmos.matrix = transform.localToWorldMatrix;
 
+            // Rysowanie pudełka (Pivot w lewym dolnym rogu 0,0)
             Vector3 localCenter = new Vector3(Size.x * unitSize * 0.5f, 2f, Size.y * unitSize * 0.5f);
             Vector3 localSize = new Vector3(Size.x * unitSize, 4f, Size.y * unitSize);
 
@@ -34,19 +51,34 @@ namespace DustRunner.LevelGeneration
             Gizmos.color = Color.white;
             Gizmos.DrawWireCube(localCenter, localSize);
 
-            // 2. Draw Doors
-            if (DoorPositions != null)
+            // Rysowanie Drzwi
+            if (Doors != null)
             {
-                Gizmos.color = _doorColor;
-                foreach (var door in DoorPositions)
+                foreach (var door in Doors)
                 {
-                    // Calculate center of the grid cell for the door
-                    Vector3 doorPos = new Vector3(
-                        (door.x + 0.5f) * unitSize, 
+                    Vector3 tileCenter = new Vector3(
+                        (door.Position.x + 0.5f) * unitSize, 
                         1f, 
-                        (door.y + 0.5f) * unitSize
+                        (door.Position.y + 0.5f) * unitSize
                     );
-                    Gizmos.DrawSphere(doorPos, 1f);
+
+                    Gizmos.color = _doorColor;
+                    Gizmos.DrawSphere(tileCenter, 0.5f);
+
+                    // Rysowanie strzałki kierunku
+                    Vector3 dirVec = Vector3.zero;
+                    switch (door.Direction)
+                    {
+                        case DoorDirection.Up: dirVec = Vector3.forward; break;
+                        case DoorDirection.Down: dirVec = Vector3.back; break;
+                        case DoorDirection.Left: dirVec = Vector3.left; break;
+                        case DoorDirection.Right: dirVec = Vector3.right; break;
+                    }
+
+                    Gizmos.color = _directionColor;
+                    Vector3 arrowEnd = tileCenter + dirVec * (unitSize * 0.8f);
+                    Gizmos.DrawLine(tileCenter, arrowEnd);
+                    Gizmos.DrawSphere(arrowEnd, 0.2f);
                 }
             }
 
