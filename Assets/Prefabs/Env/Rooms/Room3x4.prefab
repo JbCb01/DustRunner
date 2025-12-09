@@ -46,15 +46,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DustRunner.LevelGeneration.RoomTemplate
   Size: {x: 3, y: 4}
+  OccupiesLayerBelow: 1
+  OccupiesLayerAbove: 0
   Doors:
   - Position: {x: 2, y: 0}
     Direction: 3
+    LayerOffset: 0
   - Position: {x: 0, y: 3}
     Direction: 0
+    LayerOffset: 0
   _showGizmos: 1
+  _layerHeight: 5
   _boundsColor: {r: 0, g: 1, b: 0, a: 0.4}
+  _phantomColor: {r: 0, g: 1, b: 1, a: 0.2}
   _doorColor: {r: 0, g: 0, b: 1, a: 0.8}
-  _directionColor: {r: 1, g: 1, b: 0, a: 1}
 --- !u!1 &9150735644088426961
 GameObject:
   m_ObjectHideFlags: 0
@@ -104,7 +109,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9150735644088426961}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -162,7 +167,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}

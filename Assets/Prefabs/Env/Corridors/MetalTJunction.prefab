@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3280313650373998346}
   - component: {fileID: 792395048172881978}
   m_Layer: 0
-  m_Name: MetalT
+  m_Name: MetalTJunction
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

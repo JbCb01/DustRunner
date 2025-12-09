@@ -3,86 +3,92 @@ using UnityEngine;
 
 namespace DustRunner.LevelGeneration
 {
-    public enum DoorDirection
-    {
-        Up,     // Z+
-        Down,   // Z-
-        Left,   // X-
-        Right   // X+
-    }
+    public enum DoorDirection { Up, Down, Left, Right }
 
     [System.Serializable]
     public class DoorDefinition
     {
-        public Vector2Int Position; // Local Grid Coords (np. 0,0)
-        public DoorDirection Direction; // W którą stronę wychodzimy?
+        public Vector2Int Position; 
+        public DoorDirection Direction;
+        [Range(-1, 1)] public int LayerOffset = 0; // -1 = Dół, 0 = Środek, 1 = Góra
     }
 
     public class RoomTemplate : MonoBehaviour
     {
-        [Header("Settings")]
+        [Header("Grid Size (Per Layer)")]
         public Vector2Int Size = new Vector2Int(2, 2);
-        
+
+        [Header("Verticality")]
+        public bool OccupiesLayerBelow = false;
+        public bool OccupiesLayerAbove = false;
+
         [Header("Connectivity")]
-        [Tooltip("Define exact door positions and their exit direction.")]
         public List<DoorDefinition> Doors;
 
         [Header("Debug")]
         [SerializeField] private bool _showGizmos = true;
+        [SerializeField] private float _layerHeight = 4f; // Odstęp wizualny dla gizmo
         [SerializeField] private Color _boundsColor = new Color(0, 1, 0, 0.4f);
+        [SerializeField] private Color _phantomColor = new Color(0, 1, 1, 0.2f);
         [SerializeField] private Color _doorColor = new Color(0, 0, 1, 0.8f);
-        [SerializeField] private Color _directionColor = new Color(1, 1, 0, 1f);
 
         private void OnDrawGizmos()
         {
             if (!_showGizmos) return;
 
             float unitSize = 5f; 
-
-            Gizmos.color = _boundsColor;
             Matrix4x4 oldMatrix = Gizmos.matrix;
             Gizmos.matrix = transform.localToWorldMatrix;
 
-            // Rysowanie pudełka (Pivot w lewym dolnym rogu 0,0)
-            Vector3 localCenter = new Vector3(Size.x * unitSize * 0.5f, 2f, Size.y * unitSize * 0.5f);
-            Vector3 localSize = new Vector3(Size.x * unitSize, 4f, Size.y * unitSize);
+            // 1. Rysuj Główną Warstwę (0)
+            DrawLayerGizmo(0, unitSize, _boundsColor);
 
-            Gizmos.DrawCube(localCenter, localSize);
+            // 2. Rysuj Warstwy Dodatkowe (Jako "duchy")
+            if (OccupiesLayerAbove) DrawLayerGizmo(1, unitSize, _phantomColor);
+            if (OccupiesLayerBelow) DrawLayerGizmo(-1, unitSize, _phantomColor);
+
+            Gizmos.matrix = oldMatrix;
+        }
+
+        private void DrawLayerGizmo(int layerIndex, float unitSize, Color color)
+        {
+            float yOffset = layerIndex * _layerHeight;
+            Vector3 center = new Vector3(Size.x * unitSize * 0.5f, 2f + yOffset, Size.y * unitSize * 0.5f);
+            Vector3 size = new Vector3(Size.x * unitSize, 4f, Size.y * unitSize);
+
+            Gizmos.color = color;
+            Gizmos.DrawCube(center, size);
             Gizmos.color = Color.white;
-            Gizmos.DrawWireCube(localCenter, localSize);
+            Gizmos.DrawWireCube(center, size);
 
-            // Rysowanie Drzwi
+            // Rysuj drzwi należące do tej warstwy
             if (Doors != null)
             {
                 foreach (var door in Doors)
                 {
-                    Vector3 tileCenter = new Vector3(
-                        (door.Position.x + 0.5f) * unitSize, 
-                        1f, 
-                        (door.Position.y + 0.5f) * unitSize
-                    );
-
-                    Gizmos.color = _doorColor;
-                    Gizmos.DrawSphere(tileCenter, 0.5f);
-
-                    // Rysowanie strzałki kierunku
-                    Vector3 dirVec = Vector3.zero;
-                    switch (door.Direction)
+                    if (door.LayerOffset == layerIndex)
                     {
-                        case DoorDirection.Up: dirVec = Vector3.forward; break;
-                        case DoorDirection.Down: dirVec = Vector3.back; break;
-                        case DoorDirection.Left: dirVec = Vector3.left; break;
-                        case DoorDirection.Right: dirVec = Vector3.right; break;
-                    }
+                        Vector3 tileCenter = new Vector3(
+                            (door.Position.x + 0.5f) * unitSize, 
+                            1f + yOffset, 
+                            (door.Position.y + 0.5f) * unitSize
+                        );
 
-                    Gizmos.color = _directionColor;
-                    Vector3 arrowEnd = tileCenter + dirVec * (unitSize * 0.8f);
-                    Gizmos.DrawLine(tileCenter, arrowEnd);
-                    Gizmos.DrawSphere(arrowEnd, 0.2f);
+                        Gizmos.color = _doorColor;
+                        Gizmos.DrawSphere(tileCenter, 0.5f);
+                        
+                        Vector3 dirVec = Vector3.zero;
+                        switch (door.Direction) {
+                            case DoorDirection.Up: dirVec = Vector3.forward; break;
+                            case DoorDirection.Down: dirVec = Vector3.back; break;
+                            case DoorDirection.Left: dirVec = Vector3.left; break;
+                            case DoorDirection.Right: dirVec = Vector3.right; break;
+                        }
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawLine(tileCenter, tileCenter + dirVec * (unitSize * 0.8f));
+                    }
                 }
             }
-
-            Gizmos.matrix = oldMatrix;
         }
     }
 }
