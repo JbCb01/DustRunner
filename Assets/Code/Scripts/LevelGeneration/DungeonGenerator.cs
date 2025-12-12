@@ -4,162 +4,6 @@ using UnityEngine;
 
 namespace DustRunner.LevelGeneration
 {
-    // --- DATA STRUCTURES ---
-
-    public class FixedRoomData
-    {
-        public RoomTemplate Prefab;
-        public Vector2Int Position;
-        public int Rotation;
-        public bool SkipVisuals;
-        public int OriginLayerIndex;
-    }
-
-    // [System.Serializable]
-    // public class RoomConfig
-    // {
-    //     // USUNIĘTO POLE "ID"
-    //     public RoomTemplate Prefab;
-    //     public int SpawnWeight = 1;
-    // }
-
-    // [System.Serializable]
-    // public class CorridorTileSet
-    // {
-    //     public GameObject Straight;
-    //     public GameObject Corner;
-    //     public GameObject TJunction;
-    //     public GameObject Cross;
-    //     public GameObject DeadEnd;
-    //     public GameObject FloorOnly;
-    //     [Header("Props")]
-    //     public GameObject BlockedDoor;
-    // }
-
-    public class DoorNode
-    {
-        public RoomInstance ParentRoom;
-        public Vector2Int GridPos;
-        public Vector2Int ExitDirection;
-        public string NodeID;
-
-        public DoorNode(RoomInstance parent, Vector2Int pos, Vector2Int dir)
-        {
-            ParentRoom = parent;
-            GridPos = pos;
-            ExitDirection = dir;
-            NodeID = System.Guid.NewGuid().ToString();
-        }
-
-        public Vector2Int GetEntryTile() => GridPos + ExitDirection;
-    }
-
-    public class DoorEdge
-    {
-        public DoorNode NodeA;
-        public DoorNode NodeB;
-        public float Distance;
-
-        public DoorEdge(DoorNode a, DoorNode b)
-        {
-            NodeA = a;
-            NodeB = b;
-            Distance = Vector2Int.Distance(a.GridPos, b.GridPos);
-        }
-        
-        public override bool Equals(object obj) => obj is DoorEdge other && ((NodeA == other.NodeA && NodeB == other.NodeB) || (NodeA == other.NodeB && NodeB == other.NodeA));
-        public override int GetHashCode() => NodeA.GetHashCode() ^ NodeB.GetHashCode();
-    }
-
-    public class RoomInstance
-    {
-        public RoomTemplate PrefabSource;
-        public Vector2Int GridPos;
-        public int RotationIndex;
-        public bool IsGhost;
-        public int BaseLayerIndex; // NOWOŚĆ: Na jakiej warstwie stoi "stopa" tego pokoju?
-        
-        public List<DoorNode> Nodes = new List<DoorNode>();
-
-        public RoomInstance(RoomTemplate prefab, Vector2Int pos, int rotation, bool isGhost, int baseLayer)
-        {
-            PrefabSource = prefab;
-            GridPos = pos;
-            RotationIndex = rotation;
-            IsGhost = isGhost;
-            BaseLayerIndex = baseLayer;
-        }
-
-        public Vector2Int GetRotatedSize()
-        {
-            bool isRotated = RotationIndex == 1 || RotationIndex == 3;
-            return isRotated ? new Vector2Int(PrefabSource.Size.y, PrefabSource.Size.x) : PrefabSource.Size;
-        }
-
-        public Vector3 GetWorldCenter(float unitSize)
-        {
-            Vector2Int size = GetRotatedSize();
-            float x = (GridPos.x + size.x * 0.5f) * unitSize;
-            float z = (GridPos.y + size.y * 0.5f) * unitSize;
-            return new Vector3(x, 0, z);
-        }
-
-        // --- POPRAWIONA LOGIKA POBIERANIA DRZWI ---
-        public void CalculateDoorNodes(int targetGeneratorLayer)
-        {
-            Nodes.Clear();
-            if (PrefabSource.Doors == null) return;
-
-            Vector2Int originalSize = PrefabSource.Size;
-
-            foreach (var doorDef in PrefabSource.Doors)
-            {
-                // Obliczamy ABSOLUTNĄ warstwę tych konkretnych drzwi
-                // Np. Klatka Schodowa (Base: 0) + Offset Drzwi (1) = Warstwa 1
-                // Np. Sypialnia na górze (Base: 1) + Offset Drzwi (0) = Warstwa 1
-                int doorAbsoluteLayer = BaseLayerIndex + doorDef.LayerOffset;
-
-                // Sprawdzamy czy te drzwi należą do warstwy, którą właśnie generujemy
-                if (doorAbsoluteLayer != targetGeneratorLayer) continue;
-
-                Vector2Int localPos = doorDef.Position;
-                Vector2Int rotatedOffset = Vector2Int.zero;
-                Vector2Int rotatedDir = Vector2Int.zero;
-
-                switch (RotationIndex)
-                {
-                    case 0: rotatedOffset = localPos; break;
-                    case 1: rotatedOffset = new Vector2Int(localPos.y, originalSize.x - 1 - localPos.x); break;
-                    case 2: rotatedOffset = new Vector2Int(originalSize.x - 1 - localPos.x, originalSize.y - 1 - localPos.y); break;
-                    case 3: rotatedOffset = new Vector2Int(originalSize.y - 1 - localPos.y, localPos.x); break;
-                }
-
-                Vector2Int baseDir = GetDirVector(doorDef.Direction);
-                switch (RotationIndex)
-                {
-                    case 0: rotatedDir = baseDir; break;
-                    case 1: rotatedDir = new Vector2Int(baseDir.y, -baseDir.x); break;
-                    case 2: rotatedDir = -baseDir; break;
-                    case 3: rotatedDir = new Vector2Int(-baseDir.y, baseDir.x); break;
-                }
-
-                Nodes.Add(new DoorNode(this, GridPos + rotatedOffset, rotatedDir));
-            }
-        }
-
-        private Vector2Int GetDirVector(DoorDirection dir)
-        {
-            switch (dir) {
-                case DoorDirection.Up: return Vector2Int.up;
-                case DoorDirection.Down: return Vector2Int.down;
-                case DoorDirection.Left: return Vector2Int.left;
-                case DoorDirection.Right: return Vector2Int.right;
-                default: return Vector2Int.up;
-            }
-        }
-    }
-
-    // --- MAIN GENERATOR CLASS ---
     public class DungeonGenerator : MonoBehaviour
     {
         [Header("References")]
@@ -170,8 +14,9 @@ namespace DustRunner.LevelGeneration
         [SerializeField] private int _gridHeight = 50;
         [SerializeField] private float _unitSize = 5f;
 
-        [Header("Generation Settings")]
-        [SerializeField] private int _roomCount = 10;
+        [Header("Generation Budget")]
+        [Tooltip("Całkowita docelowa liczba pokoi (Duchy + Obowiązkowe + Losowe).")]
+        [SerializeField] private int _targetTotalRooms = 15; 
         [SerializeField] private int _maxPlacementAttempts = 50;
         [Range(0f, 1f)] [SerializeField] private float _loopChance = 0.15f;
         
@@ -185,9 +30,7 @@ namespace DustRunner.LevelGeneration
         [SerializeField] private int _turnCost = 10;
 
         [Header("Assets")]
-        // [SerializeField] private CorridorTileSet _corridorTiles;
         [SerializeField] private DungeonThemeSO _dungeonTheme;
-        // [SerializeField] private List<RoomConfig> _availableRooms;
 
         [Header("Debug Visualization")]
         [SerializeField] private bool _showGizmos = true;
@@ -227,7 +70,7 @@ namespace DustRunner.LevelGeneration
         public void GenerateStandalone()
         {
             if (_useRandomSeed) _seed = (int)System.DateTime.Now.Ticks;
-            _currentLayerIndex = 0; // Assume layer 0 for standalone test
+            _currentLayerIndex = 0;
             _verticalOffset = 0;
             GenerateInternal(null);
         }
@@ -238,16 +81,19 @@ namespace DustRunner.LevelGeneration
         {
             ClearAllData();
             
-            // ZMIANA: Sprawdzamy czy mamy Theme i czy ma pokoje
             if (_dungeonTheme == null)
             {
-                Debug.LogError("No Dungeon Theme assigned!");
+                Debug.LogError($"[DungeonGenerator] No Dungeon Theme assigned to {gameObject.name}!");
                 return;
             }
 
             Random.InitState(_seed);
             
-            // 1. Inject Fixed Rooms
+            // Licznik wykorzystanego budżetu
+            int currentRoomCount = 0;
+
+            // 1. INFRASTRUKTURA: Pokoje "Fixed" i "Ghost"
+            // One są priorytetem - wliczają się do budżetu
             if (fixedRooms != null)
             {
                 foreach (var fixedRoom in fixedRooms)
@@ -255,10 +101,12 @@ namespace DustRunner.LevelGeneration
                     Vector2Int rawSize = fixedRoom.Prefab.Size;
                     Vector2Int rotatedSize = (fixedRoom.Rotation == 1 || fixedRoom.Rotation == 3) ? new Vector2Int(rawSize.y, rawSize.x) : rawSize;
                     PlaceRoom(fixedRoom.Prefab, fixedRoom.Position, fixedRoom.Rotation, rotatedSize, fixedRoom.SkipVisuals, fixedRoom.OriginLayerIndex);
+                    currentRoomCount++;
                 }
             }
 
-            // 2. Place Mandatory Rooms from Theme
+            // 2. OBOWIĄZKOWE: Mandatory Rooms
+            // One też zjadają budżet
             if (_dungeonTheme.MandatoryRooms != null)
             {
                 foreach (var mandatoryPrefabObj in _dungeonTheme.MandatoryRooms)
@@ -267,29 +115,45 @@ namespace DustRunner.LevelGeneration
                     RoomTemplate template = mandatoryPrefabObj.GetComponent<RoomTemplate>();
                     if (template == null) continue;
 
-                    // Próbujemy wstawić pokój obowiązkowy (dużo prób)
                     bool placed = TryPlaceSpecificRoom(template);
-                    if (!placed) Debug.LogError($"Could not place MANDATORY room: {mandatoryPrefabObj.name} on Layer {_currentLayerIndex}");
+                    if (placed)
+                    {
+                        currentRoomCount++;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[DungeonGenerator] Could not place MANDATORY room: {mandatoryPrefabObj.name} on Layer {_currentLayerIndex}");
+                    }
                 }
             }
 
-            // 2. Place Random Rooms
-            for (int i = 0; i < _roomCount; i++) TryPlaceRoom();
+            // 3. ZAWARTOŚĆ: Dopełnienie do Targetu
+            // Obliczamy ile miejsca zostało w budżecie
+            int roomsToSpawn = _targetTotalRooms - currentRoomCount;
 
-            // 3. Collect Nodes
+            if (roomsToSpawn > 0)
+            {
+                for (int i = 0; i < roomsToSpawn; i++) TryPlaceRoom();
+            }
+            else
+            {
+                Debug.Log($"[Layer {_currentLayerIndex}] Budget filled by Ghosts/Mandatory ({currentRoomCount}/{_targetTotalRooms}). Skipping random generation.");
+            }
+
+            // 4. Collect Nodes
             foreach (var room in _placedRooms)
             {
                 room.CalculateDoorNodes(_currentLayerIndex);
                 _allNodes.AddRange(room.Nodes);
             }
 
-            // 4. Connect Graph
+            // 5. Connect Graph
             ConnectDoorsGraph();
 
-            // 5. Generate Paths
+            // 6. Generate Paths
             GeneratePathfinding();
 
-            // 6. Autotiling
+            // 7. Autotiling Preparation
             _activeDoorDirections.Clear();
             foreach (var node in _usedNodes)
             {
@@ -297,7 +161,7 @@ namespace DustRunner.LevelGeneration
                     _activeDoorDirections.Add(node.GridPos, node.ExitDirection);
             }
 
-            // 7. Spawn
+            // 8. Spawning
             SpawnWorld();
             SpawnDoorSeals();
         }
@@ -306,10 +170,16 @@ namespace DustRunner.LevelGeneration
         public void ClearAllData()
         {
             if (_worldContainer != null) {
-                for (int i = _worldContainer.childCount - 1; i >= 0; i--) DestroyImmediate(_worldContainer.GetChild(i).gameObject);
+                while (_worldContainer.childCount > 0) DestroyImmediate(_worldContainer.GetChild(0).gameObject);
             }
-            _occupiedCells.Clear(); _corridorCells.Clear(); _placedRooms.Clear();
-            _allNodes.Clear(); _candidateEdges.Clear(); _finalEdges.Clear(); _usedNodes.Clear(); _activeDoorDirections.Clear();
+            _occupiedCells.Clear(); 
+            _corridorCells.Clear(); 
+            _placedRooms.Clear();
+            _allNodes.Clear(); 
+            _candidateEdges.Clear(); 
+            _finalEdges.Clear(); 
+            _usedNodes.Clear(); 
+            _activeDoorDirections.Clear();
         }
 
         private bool TryPlaceSpecificRoom(RoomTemplate template)
@@ -341,7 +211,7 @@ namespace DustRunner.LevelGeneration
             for (int attempt = 0; attempt < _maxPlacementAttempts; attempt++)
             {
                 int rotation = Random.Range(0, 4);
-                Vector2Int rawSize = randomPrefab.Size; // Bierzemy rozmiar z wylosowanego prefaba
+                Vector2Int rawSize = randomPrefab.Size;
                 Vector2Int rotatedSize = (rotation == 1 || rotation == 3) ? new Vector2Int(rawSize.y, rawSize.x) : rawSize;
 
                 int x = Random.Range(1, _gridWidth - rotatedSize.x - 1);
@@ -350,7 +220,6 @@ namespace DustRunner.LevelGeneration
 
                 if (IsPositionValid(potentialPos, rotatedSize))
                 {
-                    // BaseLayer = currentLayerIndex
                     PlaceRoom(randomPrefab, potentialPos, rotation, rotatedSize, false, _currentLayerIndex);
                     return;
                 }
@@ -374,16 +243,18 @@ namespace DustRunner.LevelGeneration
                     _occupiedCells.Add(new Vector2Int(pos.x + x, pos.y + y));
         }
 
-        // --- GRAPH & PATHFINDING ---
+        // --- GRAPH LOGIC ---
 
         private void ConnectDoorsGraph()
         {
             if (_allNodes.Count < 2) return;
 
-            _candidateEdges = DelaunayForDoors.Triangulate(_allNodes);
+            _candidateEdges = DungeonAlgorithms.Triangulate(_allNodes);
+            
             _candidateEdges.RemoveAll(edge => 
             {
                 if (edge.NodeA.ParentRoom == edge.NodeB.ParentRoom) return true; 
+                // KLUCZOWE: Sprawdzamy widoczność uwzględniając przezroczystość duchów
                 if (!IsLineClear(edge.NodeA, edge.NodeB)) return true; 
                 return false;
             });
@@ -402,7 +273,8 @@ namespace DustRunner.LevelGeneration
             foreach (var edge in _candidateEdges)
             {
                 if(!nodeToCluster.ContainsKey(edge.NodeA) || !nodeToCluster.ContainsKey(edge.NodeB)) continue;
-                RoomInstance cA = nodeToCluster[edge.NodeA]; RoomInstance cB = nodeToCluster[edge.NodeB];
+                RoomInstance cA = nodeToCluster[edge.NodeA]; 
+                RoomInstance cB = nodeToCluster[edge.NodeB];
 
                 if (cA != cB)
                 {
@@ -414,6 +286,7 @@ namespace DustRunner.LevelGeneration
             }
         }
 
+        // --- GHOST TRANSPARENCY FIX ---
         private bool IsLineClear(DoorNode a, DoorNode b)
         {
             Vector2Int start = a.GetEntryTile(); Vector2Int end = b.GetEntryTile();
@@ -427,7 +300,13 @@ namespace DustRunner.LevelGeneration
                 if (_occupiedCells.Contains(p))
                 {
                     RoomInstance hitRoom = GetRoomAt(p);
-                    if (hitRoom != null && hitRoom != a.ParentRoom && hitRoom != b.ParentRoom) return false; 
+                    // Jeśli trafiliśmy w pokój, który nie jest żadnym z końców krawędzi...
+                    if (hitRoom != null && hitRoom != a.ParentRoom && hitRoom != b.ParentRoom)
+                    {
+                        // FIX: Jeśli to Ghost Room, ignorujemy kolizję (pozwalamy na połączenie logiczne)
+                        // A* później znajdzie drogę naokoło fizycznego modelu
+                        if (!hitRoom.IsGhost) return false;
+                    }
                 }
                 if (x0 == x1 && y0 == y1) break;
                 int e2 = 2 * err; if (e2 >= dy) { err += dy; x0 += sx; } if (e2 <= dx) { err += dx; y0 += sy; }
@@ -439,60 +318,44 @@ namespace DustRunner.LevelGeneration
         {
             foreach(var r in _placedRooms) {
                 Vector2Int size = r.GetRotatedSize();
-                if (pos.x >= r.GridPos.x && pos.x < r.GridPos.x + size.x && pos.y >= r.GridPos.y && pos.y < r.GridPos.y + size.y) return r;
+                if (pos.x >= r.GridPos.x && pos.x < r.GridPos.x + size.x && 
+                    pos.y >= r.GridPos.y && pos.y < r.GridPos.y + size.y) return r;
             }
             return null;
         }
 
         private void GeneratePathfinding()
         {
+            var ctx = new DungeonAlgorithms.PathfindingContext
+            {
+                GridWidth = _gridWidth,
+                GridHeight = _gridHeight,
+                OccupiedCells = _occupiedCells,
+                ExistingCorridors = _corridorCells,
+                DiggingCost = _diggingCost,
+                ExistingPathCost = _existingPathCost,
+                TurnCost = _turnCost
+            };
+
             foreach (var edge in _finalEdges)
             {
-                Vector2Int start = edge.NodeA.GetEntryTile(); Vector2Int end = edge.NodeB.GetEntryTile();
-                if (IsOutOfBounds(start) || IsOutOfBounds(end)) continue;
-                List<Vector2Int> path = FindPath(start, end);
+                Vector2Int start = edge.NodeA.GetEntryTile(); 
+                Vector2Int end = edge.NodeB.GetEntryTile();
+                
+                ctx.ExistingCorridors = _corridorCells; 
+
+                List<Vector2Int> path = DungeonAlgorithms.FindPath(start, end, ctx);
+                
                 if (path != null)
                 {
-                    _usedNodes.Add(edge.NodeA); _usedNodes.Add(edge.NodeB);
-                    _corridorCells.Add(start); _corridorCells.Add(end);
+                    _usedNodes.Add(edge.NodeA); 
+                    _usedNodes.Add(edge.NodeB);
+                    _corridorCells.Add(start); 
+                    _corridorCells.Add(end);
                     foreach (var p in path) if (!_occupiedCells.Contains(p)) _corridorCells.Add(p);
                 }
             }
         }
-
-        private List<Vector2Int> FindPath(Vector2Int start, Vector2Int end)
-        {
-            Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
-            Dictionary<Vector2Int, int> costSoFar = new Dictionary<Vector2Int, int>();
-            var frontier = new SimplePriorityQueue<Vector2Int>();
-            frontier.Enqueue(start, 0); cameFrom[start] = start; costSoFar[start] = 0;
-
-            while (frontier.Count > 0)
-            {
-                Vector2Int current = frontier.Dequeue();
-                if (current == end) break;
-                foreach (Vector2Int next in GetNeighbors(current))
-                {
-                    if (IsOutOfBounds(next) || _occupiedCells.Contains(next)) continue;
-                    int moveCost = _corridorCells.Contains(next) ? _existingPathCost : _diggingCost;
-                    int newCost = costSoFar[current] + moveCost;
-                    if (current != start) {
-                        Vector2Int parent = cameFrom[current]; if ((current - parent) != (next - current)) newCost += _turnCost;
-                    }
-                    if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next]) {
-                        costSoFar[next] = newCost; frontier.Enqueue(next, newCost + GetManhattanDistance(next, end)); cameFrom[next] = current;
-                    }
-                }
-            }
-            if (!cameFrom.ContainsKey(end)) return null;
-            List<Vector2Int> path = new List<Vector2Int>(); Vector2Int curr = end;
-            while (curr != start) { path.Add(curr); curr = cameFrom[curr]; }
-            path.Add(start); path.Reverse(); return path;
-        }
-
-        private IEnumerable<Vector2Int> GetNeighbors(Vector2Int p) { yield return p+Vector2Int.up; yield return p+Vector2Int.down; yield return p+Vector2Int.left; yield return p+Vector2Int.right; }
-        private int GetManhattanDistance(Vector2Int a, Vector2Int b) => Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
-        private bool IsOutOfBounds(Vector2Int p) => p.x < 0 || p.x >= _gridWidth || p.y < 0 || p.y >= _gridHeight;
 
         // --- SPAWNING ---
 
@@ -504,6 +367,7 @@ namespace DustRunner.LevelGeneration
                 if (room.IsGhost) continue;
                 Vector3 worldPos = new Vector3(room.GridPos.x * _unitSize, _verticalOffset, room.GridPos.y * _unitSize);
                 Quaternion rotation = Quaternion.Euler(0, room.RotationIndex * 90, 0);
+                
                 Vector3 offset = Vector3.zero;
                 switch (room.RotationIndex) {
                     case 0: offset = Vector3.zero; break;
@@ -511,6 +375,7 @@ namespace DustRunner.LevelGeneration
                     case 2: offset = new Vector3(room.PrefabSource.Size.x * _unitSize, 0, room.PrefabSource.Size.y * _unitSize); break;
                     case 3: offset = new Vector3(room.PrefabSource.Size.y * _unitSize, 0, 0); break;
                 }
+                
                 GameObject roomObj = Instantiate(room.PrefabSource.gameObject, worldPos + offset, rotation, _worldContainer);
                 roomObj.name = $"{room.PrefabSource.name}_{room.GridPos}";
             }
@@ -519,7 +384,7 @@ namespace DustRunner.LevelGeneration
 
         private void SpawnDoorSeals()
         {
-            if (_dungeonTheme == null || _dungeonTheme.BlockedDoor == null) return; // Zmiana tutaj
+            if (_dungeonTheme == null || _dungeonTheme.BlockedDoor == null) return;
 
             foreach (var node in _allNodes)
             {
@@ -528,7 +393,6 @@ namespace DustRunner.LevelGeneration
                     Vector3 worldPos = new Vector3((node.GridPos.x + 0.5f) * _unitSize, _verticalOffset, (node.GridPos.y + 0.5f) * _unitSize);
                     Vector3 dirVec = new Vector3(node.ExitDirection.x, 0, node.ExitDirection.y);
                     Quaternion rotation = Quaternion.LookRotation(dirVec);
-                    // Zmiana tutaj:
                     Instantiate(_dungeonTheme.BlockedDoor, worldPos, rotation, _worldContainer);
                 }
             }
@@ -536,7 +400,7 @@ namespace DustRunner.LevelGeneration
 
         private void SpawnCorridorTile(Vector2Int pos)
         {
-            if (_dungeonTheme == null) return; // Safety check
+            if (_dungeonTheme == null) return;
 
             bool up = ShouldConnect(pos + Vector2Int.up, Vector2Int.up);
             bool down = ShouldConnect(pos + Vector2Int.down, Vector2Int.down);
@@ -576,10 +440,8 @@ namespace DustRunner.LevelGeneration
             } 
             else 
             {
-                // Fallback: Jeśli nie ma DeadEnd, użyj Straight
                 prefab = _dungeonTheme.GetRandomDeadEnd();
                 if (prefab == null) prefab = _dungeonTheme.GetRandomStraight();
-
                 if(up) rot=0; else if(right) rot=90; else if(down) rot=180; else rot=270;
             }
 
@@ -623,43 +485,5 @@ namespace DustRunner.LevelGeneration
                 foreach (var e in _finalEdges) Gizmos.DrawLine(new Vector3((e.NodeA.GridPos.x+0.5f)*_unitSize, _verticalOffset + 2.1f, (e.NodeA.GridPos.y+0.5f)*_unitSize), new Vector3((e.NodeB.GridPos.x+0.5f)*_unitSize, _verticalOffset + 2.1f, (e.NodeB.GridPos.y+0.5f)*_unitSize));
             }
         }
-
-        public class SimplePriorityQueue<T> { List<KeyValuePair<T, int>> e=new(); public int Count=>e.Count; public void Enqueue(T i, int p){e.Add(new(i,p));} public T Dequeue(){int b=0;for(int i=0;i<e.Count;i++)if(e[i].Value<e[b].Value)b=i;T r=e[b].Key;e.RemoveAt(b);return r;}}
-    }
-
-    public static class DelaunayForDoors
-    {
-        public class Vertex { public Vector2 Position; public DoorNode NodeRef; public Vertex(Vector2 pos, DoorNode node) { Position = pos; NodeRef = node; } }
-        public class Triangle { public Vertex A, B, C; public Triangle(Vertex a, Vertex b, Vertex c) { A = a; B = b; C = c; } 
-            public bool ContainsInCircumcircle(Vector2 p) { 
-                float ax = A.Position.x, ay = A.Position.y; float bx = B.Position.x, by = B.Position.y; float cx = C.Position.x, cy = C.Position.y;
-                float D = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by)); float Ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / D; float Uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / D;
-                float rSq = (ax - Ux) * (ax - Ux) + (ay - Uy) * (ay - Uy); float dSq = (p.x - Ux) * (p.x - Ux) + (p.y - Uy) * (p.y - Uy); return dSq <= rSq;
-            } 
-        }
-        public class Edge { public Vertex U, V; public Edge(Vertex u, Vertex v) { U = u; V = v; } public override bool Equals(object obj) => obj is Edge e && ((U == e.U && V == e.V) || (U == e.V && V == e.U)); public override int GetHashCode() => U.GetHashCode() ^ V.GetHashCode(); }
-
-        public static List<DoorEdge> Triangulate(List<DoorNode> nodes)
-        {
-            if (nodes.Count < 3) return ConvertLine(nodes);
-            List<Vertex> vertices = nodes.Select(n => new Vertex(n.GridPos, n)).ToList();
-            float minX = vertices.Min(v => v.Position.x); float minY = vertices.Min(v => v.Position.y); float maxX = vertices.Max(v => v.Position.x); float maxY = vertices.Max(v => v.Position.y); float dx = maxX - minX; float dy = maxY - minY; float deltaMax = Mathf.Max(dx, dy) * 2;
-            Vertex p1 = new Vertex(new Vector2(minX - 1, minY - 1), null); Vertex p2 = new Vertex(new Vector2(minX - 1, maxY + deltaMax), null); Vertex p3 = new Vertex(new Vector2(maxX + deltaMax, minY - 1), null);
-            List<Triangle> triangles = new List<Triangle> { new Triangle(p1, p2, p3) };
-            foreach (var vertex in vertices) {
-                List<Triangle> badTriangles = new List<Triangle>(); foreach (var t in triangles) if (t.ContainsInCircumcircle(vertex.Position)) badTriangles.Add(t);
-                List<Edge> polygon = new List<Edge>(); foreach (var t in badTriangles) { AddPolygonEdge(polygon, new Edge(t.A, t.B)); AddPolygonEdge(polygon, new Edge(t.B, t.C)); AddPolygonEdge(polygon, new Edge(t.C, t.A)); }
-                foreach (var t in badTriangles) triangles.Remove(t); foreach (var edge in polygon) triangles.Add(new Triangle(edge.U, edge.V, vertex));
-            }
-            HashSet<DoorEdge> resultEdges = new HashSet<DoorEdge>();
-            foreach (var t in triangles) {
-                bool hasP1 = t.A == p1 || t.B == p1 || t.C == p1; bool hasP2 = t.A == p2 || t.B == p2 || t.C == p2; bool hasP3 = t.A == p3 || t.B == p3 || t.C == p3;
-                if (!hasP1 && !hasP2 && !hasP3) { AddDoorEdge(resultEdges, t.A, t.B); AddDoorEdge(resultEdges, t.B, t.C); AddDoorEdge(resultEdges, t.C, t.A); }
-            }
-            return resultEdges.ToList();
-        }
-        private static void AddPolygonEdge(List<Edge> polygon, Edge edge) { var existing = polygon.FirstOrDefault(e => e.Equals(edge)); if (existing != null) polygon.Remove(existing); else polygon.Add(edge); }
-        private static void AddDoorEdge(HashSet<DoorEdge> set, Vertex u, Vertex v) { if (u.NodeRef != null && v.NodeRef != null) set.Add(new DoorEdge(u.NodeRef, v.NodeRef)); }
-        private static List<DoorEdge> ConvertLine(List<DoorNode> nodes) { List<DoorEdge> edges = new List<DoorEdge>(); for (int i = 0; i < nodes.Count - 1; i++) edges.Add(new DoorEdge(nodes[i], nodes[i+1])); return edges; }
     }
 }

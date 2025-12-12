@@ -51,10 +51,8 @@ MonoBehaviour:
   Doors:
   - Position: {x: 2, y: 0}
     Direction: 3
-    LayerOffset: 0
   - Position: {x: 0, y: 3}
     Direction: 0
-    LayerOffset: 0
   _showGizmos: 1
   _layerHeight: 5
   _boundsColor: {r: 0, g: 1, b: 0, a: 0.4}

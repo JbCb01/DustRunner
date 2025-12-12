@@ -12,8 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a9b16a74110c1f47bf741e65ca0340c, type: 3}
   m_Name: Theme_Level0
   m_EditorClassIdentifier: Assembly-CSharp::DustRunner.LevelGeneration.DungeonThemeSO
-  CorridorFolderPath: Prefabs/Env/Corridors
+  CorridorFolderPath: Prefabs/Env/Corridors/Metal
   RoomsFolderPath: Prefabs/Env/Rooms
+  MandatoryFolderPath: Prefabs/Env/Rooms
+  MandatoryRooms:
+  - {fileID: 4835339259893444256, guid: 15b7b79779d34e74ba1e638409455467, type: 3}
+  - {fileID: 355564898112621062, guid: 0087f7af3f05ab64683c47c1222dd978, type: 3}
   AvailableRooms:
   - Prefab: {fileID: 4835339259893444256, guid: 15b7b79779d34e74ba1e638409455467, type: 3}
     Weight: 0
@@ -22,31 +26,19 @@ MonoBehaviour:
   Straights:
   - Prefab: {fileID: 3977852996776626659, guid: e3faec5cc08c6a54b8b34cc8a635236d, type: 3}
     Weight: 1
-  - Prefab: {fileID: 5963223985046402370, guid: b6945f7850decc541ab054b7788581fe, type: 3}
-    Weight: 10
   Corners:
   - Prefab: {fileID: 3288900081056384740, guid: 59ae265923c1ecd4ebc13f12c22d7abe, type: 3}
     Weight: 0
-  - Prefab: {fileID: 1871093687266353396, guid: 34b29982be62ead4ba375b601c015fd4, type: 3}
-    Weight: 10
   TJunctions:
   - Prefab: {fileID: 668097068309997616, guid: a07f6d91413c92a4287ea1681ba1a705, type: 3}
-    Weight: 10
-  - Prefab: {fileID: 8566339178332249436, guid: f51554cc22a945742bbcd31eb3035fe2, type: 3}
     Weight: 10
   Crosses:
   - Prefab: {fileID: 6856649200968417425, guid: 3f0d2577006d68a43b51a03c31298d9c, type: 3}
     Weight: 0
-  - Prefab: {fileID: 2589404656026820794, guid: 68bd8908a6f68a0498d5d418c1f5008a, type: 3}
-    Weight: 10
   DeadEnds:
   - Prefab: {fileID: 3977852996776626659, guid: e3faec5cc08c6a54b8b34cc8a635236d, type: 3}
     Weight: 10
-  - Prefab: {fileID: 5963223985046402370, guid: b6945f7850decc541ab054b7788581fe, type: 3}
-    Weight: 10
   FloorsOnly:
   - Prefab: {fileID: 6856649200968417425, guid: 3f0d2577006d68a43b51a03c31298d9c, type: 3}
-    Weight: 10
-  - Prefab: {fileID: 2589404656026820794, guid: 68bd8908a6f68a0498d5d418c1f5008a, type: 3}
     Weight: 10
   BlockedDoor: {fileID: 0}

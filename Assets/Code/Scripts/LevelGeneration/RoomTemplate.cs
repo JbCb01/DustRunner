@@ -8,16 +8,17 @@ namespace DustRunner.LevelGeneration
     [System.Serializable]
     public class DoorDefinition
     {
-        public Vector2Int Position; 
+        public Vector2Int Position;
         public DoorDirection Direction;
-        [Range(-1, 1)] public int LayerOffset = 0; // -1 = Dół, 0 = Środek, 1 = Góra
+        
+        [Range(-1, 1)] public int LayerOffset = 0; 
     }
 
     public class RoomTemplate : MonoBehaviour
     {
-        [Header("Grid Size (Per Layer)")]
+        [Header("Settings")]
         public Vector2Int Size = new Vector2Int(2, 2);
-
+        
         [Header("Verticality")]
         public bool OccupiesLayerBelow = false;
         public bool OccupiesLayerAbove = false;
@@ -66,6 +67,7 @@ namespace DustRunner.LevelGeneration
             {
                 foreach (var door in Doors)
                 {
+                    // Rysuj tylko jeśli offset drzwi pasuje do rysowanej warstwy
                     if (door.LayerOffset == layerIndex)
                     {
                         Vector3 tileCenter = new Vector3(
@@ -86,6 +88,7 @@ namespace DustRunner.LevelGeneration
                         }
                         Gizmos.color = Color.yellow;
                         Gizmos.DrawLine(tileCenter, tileCenter + dirVec * (unitSize * 0.8f));
+                        Gizmos.DrawSphere(tileCenter + dirVec * (unitSize * 0.8f), 0.2f);
                     }
                 }
             }

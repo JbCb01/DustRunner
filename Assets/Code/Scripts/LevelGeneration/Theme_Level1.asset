@@ -12,13 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a9b16a74110c1f47bf741e65ca0340c, type: 3}
   m_Name: Theme_Level1
   m_EditorClassIdentifier: Assembly-CSharp::DustRunner.LevelGeneration.DungeonThemeSO
-  CorridorFolderPath: Prefabs/Corridors/Industrial
-  RoomsFolderPath: Prefabs/Rooms/Industrial
-  AvailableRooms: []
-  Straights: []
-  Corners: []
-  TJunctions: []
-  Crosses: []
-  DeadEnds: []
-  FloorsOnly: []
+  CorridorFolderPath: Prefabs/Env/Corridors/Metal
+  RoomsFolderPath: Prefabs/Env/Rooms
+  MandatoryFolderPath: Prefabs/Env/Rooms
+  MandatoryRooms:
+  - {fileID: 4835339259893444256, guid: 15b7b79779d34e74ba1e638409455467, type: 3}
+  AvailableRooms:
+  - Prefab: {fileID: 4835339259893444256, guid: 15b7b79779d34e74ba1e638409455467, type: 3}
+    Weight: 10
+  Straights:
+  - Prefab: {fileID: 3977852996776626659, guid: e3faec5cc08c6a54b8b34cc8a635236d, type: 3}
+    Weight: 10
+  Corners:
+  - Prefab: {fileID: 3288900081056384740, guid: 59ae265923c1ecd4ebc13f12c22d7abe, type: 3}
+    Weight: 10
+  TJunctions:
+  - Prefab: {fileID: 668097068309997616, guid: a07f6d91413c92a4287ea1681ba1a705, type: 3}
+    Weight: 10
+  Crosses:
+  - Prefab: {fileID: 6856649200968417425, guid: 3f0d2577006d68a43b51a03c31298d9c, type: 3}
+    Weight: 10
+  DeadEnds:
+  - Prefab: {fileID: 3977852996776626659, guid: e3faec5cc08c6a54b8b34cc8a635236d, type: 3}
+    Weight: 10
+  FloorsOnly:
+  - Prefab: {fileID: 6856649200968417425, guid: 3f0d2577006d68a43b51a03c31298d9c, type: 3}
+    Weight: 10
   BlockedDoor: {fileID: 0}

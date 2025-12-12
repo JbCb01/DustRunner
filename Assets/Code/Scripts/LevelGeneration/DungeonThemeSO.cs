@@ -17,12 +17,12 @@ namespace DustRunner.LevelGeneration
     public class DungeonThemeSO : ScriptableObject
     {
         [Header("Paths")]
-        public string CorridorFolderPath = "Prefabs/Corridors/Industrial";
-        public string RoomsFolderPath = "Prefabs/Rooms/Industrial";
-        public string MandatoryFolderPath = "Prefabs/Rooms/Industrial/Mandatory"; // NOWE
+        public string CorridorFolderPath = "Prefabs/Env/Corridors/";
+        public string RoomsFolderPath = "Prefabs/Env/Rooms";
+        public string MandatoryFolderPath = "Prefabs/Env/Rooms/Mandatory";
 
         [Header("Mandatory Rooms (100% Spawn Chance)")]
-        public List<GameObject> MandatoryRooms = new List<GameObject>(); // NOWE
+        public List<GameObject> MandatoryRooms = new List<GameObject>();
 
         [Header("Random Rooms (Weighted)")]
         public List<WeightedPrefab> AvailableRooms = new List<WeightedPrefab>();
@@ -79,8 +79,8 @@ namespace DustRunner.LevelGeneration
             LoadWeightedList(CorridorFolderPath, ref Corners, "corner");
             LoadWeightedList(CorridorFolderPath, ref TJunctions, new string[] { "tjunction", "3way" });
             LoadWeightedList(CorridorFolderPath, ref Crosses, new string[] { "cross", "4way" });
-            LoadWeightedList(CorridorFolderPath, ref DeadEnds, new string[] { "deadend", "end" });
-            LoadWeightedList(CorridorFolderPath, ref FloorsOnly, "floor");
+            LoadWeightedList(CorridorFolderPath, ref DeadEnds,  "straight");
+            LoadWeightedList(CorridorFolderPath, ref FloorsOnly, new string[] { "cross", "4way" });
 
             EditorUtility.SetDirty(this);
         }
