@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 19158566990371337}
-  - component: {fileID: 435970715772895795}
+  - component: {fileID: 7931977545095099856}
   m_Layer: 0
   m_Name: Room3x4
   m_TagString: Untagged
@@ -33,7 +33,7 @@ Transform:
   - {fileID: 756861072760946203}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &435970715772895795
+--- !u!114 &7931977545095099856
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,22 +42,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 355564898112621062}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4738155163586f545b37c9d6e65a9130, type: 3}
+  m_Script: {fileID: 11500000, guid: 0c9875f25bba65e4f97eb3379b9e0103, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DustRunner.LevelGeneration.RoomTemplate
-  Size: {x: 3, y: 4}
-  OccupiesLayerBelow: 1
-  OccupiesLayerAbove: 0
-  Doors:
-  - Position: {x: 2, y: 0}
-    Direction: 3
-  - Position: {x: 0, y: 3}
+  Category: 0
+  GridSize: {x: 3, y: 2, z: 4}
+  Sockets:
+  - LocalPosition: {x: 1, y: 1, z: 3}
     Direction: 0
-  _showGizmos: 1
-  _layerHeight: 5
-  _boundsColor: {r: 0, g: 1, b: 0, a: 0.4}
-  _phantomColor: {r: 0, g: 1, b: 1, a: 0.2}
-  _doorColor: {r: 0, g: 0, b: 1, a: 0.8}
+    Type: 0
+  - LocalPosition: {x: 0, y: 0, z: 0}
+    Direction: 1
+    Type: 0
+  - LocalPosition: {x: 0, y: 0, z: 3}
+    Direction: 3
+    Type: 0
+  GizmoColor: {r: 0, g: 0.6812062, b: 1, a: 0.4}
 --- !u!1 &9150735644088426961
 GameObject:
   m_ObjectHideFlags: 0
@@ -86,8 +86,8 @@ Transform:
   m_GameObject: {fileID: 9150735644088426961}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.5, y: 1.5, z: 10}
-  m_LocalScale: {x: 15, y: 1, z: 20}
+  m_LocalPosition: {x: 7.5, y: 5, z: 10}
+  m_LocalScale: {x: 15, y: 10, z: 20}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 19158566990371337}

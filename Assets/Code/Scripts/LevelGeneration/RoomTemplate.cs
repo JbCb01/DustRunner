@@ -1,96 +1,77 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace DustRunner.LevelGeneration
 {
-    public enum DoorDirection { Up, Down, Left, Right }
-
-    [System.Serializable]
-    public class DoorDefinition
-    {
-        public Vector2Int Position;
-        public DoorDirection Direction;
-        
-        [Range(-1, 1)] public int LayerOffset = 0; 
-    }
-
+    [SelectionBase]
     public class RoomTemplate : MonoBehaviour
     {
-        [Header("Settings")]
-        public Vector2Int Size = new Vector2Int(2, 2);
+        [Header("Grid Logic")]
+        [Tooltip("Wymiary pokoju (X=Szerokość, Z=Długość/Głębokość).")]
+        public Vector3Int GridSize = new Vector3Int(1, 1, 1);
         
-        [Header("Verticality")]
-        public bool OccupiesLayerBelow = false;
-        public bool OccupiesLayerAbove = false;
+        public List<RoomSocket> Sockets = new List<RoomSocket>();
 
-        [Header("Connectivity")]
-        public List<DoorDefinition> Doors;
+        [Header("Editor")]
+        public Color GizmoColor = new Color(0, 1, 0, 0.4f);
+        private const float GRID_SCALE = 5.0f; // Zgodne z Twoim projektem
 
-        [Header("Debug")]
-        [SerializeField] private bool _showGizmos = true;
-        [SerializeField] private float _layerHeight = 4f; // Odstęp wizualny dla gizmo
-        [SerializeField] private Color _boundsColor = new Color(0, 1, 0, 0.4f);
-        [SerializeField] private Color _phantomColor = new Color(0, 1, 1, 0.2f);
-        [SerializeField] private Color _doorColor = new Color(0, 0, 1, 0.8f);
+        // --- MATH ---
+        // Bezpieczna rotacja na intach (90 stopni Y)
+        public static Vector3Int RotateVectorInt(Vector3Int v, int angle90Steps)
+        {
+            int steps = angle90Steps % 4;
+            if (steps < 0) steps += 4;
+            return steps switch
+            {
+                0 => v,
+                1 => new Vector3Int(v.z, v.y, -v.x),
+                2 => new Vector3Int(-v.x, v.y, -v.z),
+                3 => new Vector3Int(-v.z, v.y, v.x),
+                _ => v
+            };
+        }
+
+        public static Vector3Int RotateDirection(Vector3Int dir, int angle90Steps) => RotateVectorInt(dir, angle90Steps);
+
+        public List<Vector3Int> GetOccupiedCells(int rotationSteps)
+        {
+            List<Vector3Int> cells = new List<Vector3Int>();
+            for (int x = 0; x < GridSize.x; x++)
+            {
+                for (int y = 0; y < GridSize.y; y++)
+                {
+                    for (int z = 0; z < GridSize.z; z++)
+                    {
+                        Vector3Int localPos = new Vector3Int(x, y, z);
+                        cells.Add(RotateVectorInt(localPos, rotationSteps));
+                    }
+                }
+            }
+            return cells;
+        }
 
         private void OnDrawGizmos()
         {
-            if (!_showGizmos) return;
-
-            float unitSize = 5f; 
-            Matrix4x4 oldMatrix = Gizmos.matrix;
             Gizmos.matrix = transform.localToWorldMatrix;
+            
+            Vector3 size = new Vector3(GridSize.x, GridSize.y, GridSize.z) * GRID_SCALE;
+            Vector3 center = size * 0.5f;
 
-            // 1. Rysuj Główną Warstwę (0)
-            DrawLayerGizmo(0, unitSize, _boundsColor);
-
-            // 2. Rysuj Warstwy Dodatkowe (Jako "duchy")
-            if (OccupiesLayerAbove) DrawLayerGizmo(1, unitSize, _phantomColor);
-            if (OccupiesLayerBelow) DrawLayerGizmo(-1, unitSize, _phantomColor);
-
-            Gizmos.matrix = oldMatrix;
-        }
-
-        private void DrawLayerGizmo(int layerIndex, float unitSize, Color color)
-        {
-            float yOffset = layerIndex * _layerHeight;
-            Vector3 center = new Vector3(Size.x * unitSize * 0.5f, 2f + yOffset, Size.y * unitSize * 0.5f);
-            Vector3 size = new Vector3(Size.x * unitSize, 4f, Size.y * unitSize);
-
-            Gizmos.color = color;
+            Gizmos.color = GizmoColor;
             Gizmos.DrawCube(center, size);
-            Gizmos.color = Color.white;
+            Gizmos.color = new Color(GizmoColor.r, GizmoColor.g, GizmoColor.b, 1f);
             Gizmos.DrawWireCube(center, size);
 
-            // Rysuj drzwi należące do tej warstwy
-            if (Doors != null)
+            foreach (var socket in Sockets)
             {
-                foreach (var door in Doors)
-                {
-                    // Rysuj tylko jeśli offset drzwi pasuje do rysowanej warstwy
-                    if (door.LayerOffset == layerIndex)
-                    {
-                        Vector3 tileCenter = new Vector3(
-                            (door.Position.x + 0.5f) * unitSize, 
-                            1f + yOffset, 
-                            (door.Position.y + 0.5f) * unitSize
-                        );
+                Vector3 cellCenter = (Vector3)socket.LocalPosition * GRID_SCALE + (Vector3.one * GRID_SCALE * 0.5f);
+                Vector3 dirVec = (Vector3)socket.GetDirectionVector();
+                Vector3 socketPos = cellCenter + (dirVec * GRID_SCALE * 0.5f);
 
-                        Gizmos.color = _doorColor;
-                        Gizmos.DrawSphere(tileCenter, 0.5f);
-                        
-                        Vector3 dirVec = Vector3.zero;
-                        switch (door.Direction) {
-                            case DoorDirection.Up: dirVec = Vector3.forward; break;
-                            case DoorDirection.Down: dirVec = Vector3.back; break;
-                            case DoorDirection.Left: dirVec = Vector3.left; break;
-                            case DoorDirection.Right: dirVec = Vector3.right; break;
-                        }
-                        Gizmos.color = Color.yellow;
-                        Gizmos.DrawLine(tileCenter, tileCenter + dirVec * (unitSize * 0.8f));
-                        Gizmos.DrawSphere(tileCenter + dirVec * (unitSize * 0.8f), 0.2f);
-                    }
-                }
+                Gizmos.color = socket.Type == SocketType.Industrial ? Color.yellow : Color.cyan;
+                Gizmos.DrawSphere(socketPos, 0.4f);
+                Gizmos.DrawLine(socketPos, socketPos + dirVec * 2.0f);
             }
         }
     }
