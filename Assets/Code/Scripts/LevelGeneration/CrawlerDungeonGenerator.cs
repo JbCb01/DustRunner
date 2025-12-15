@@ -8,13 +8,17 @@ namespace DustRunner.LevelGeneration
     {
         [Header("Configuration")]
         [SerializeField] private RoomTemplate startRoomPrefab;
+        [SerializeField] private RoomTemplate endingRoomPrefab; // NOWOŚĆ: Pokój końcowy
         [SerializeField] private List<RoomTemplate> roomPrefabs;
         [SerializeField] private CorridorTileSet corridorTiles;
 
         [Header("Parameters")]
-        [SerializeField] [Range(0f, 1f)] private float corridorChance = 0.5f;
-        [SerializeField] private int targetStepCount = 20;
-        [SerializeField] private float gridScale = 5.0f; // Scale 5.0 from current repo
+        [SerializeField] [Range(0f, 1f)] private float corridorChance = 0.4f;
+        [SerializeField] private int minRoomCount = 10; // NOWOŚĆ: Gwarantowana liczba pokoi
+        [SerializeField] private int maxStepsSafety = 100; // Zabezpieczenie przed pętlą nieskończoną
+        
+        [Header("Grid Settings")]
+        [SerializeField] private float gridScale = 5.0f;
         [SerializeField] private bool generateOnStart = false;
 
         // --- Structures ---
@@ -40,6 +44,9 @@ namespace DustRunner.LevelGeneration
         private List<PendingExit> pendingExits = new List<PendingExit>();
         private List<(Vector3 start, Vector3 end, Color color)> debugPaths = new List<(Vector3, Vector3, Color)>();
 
+        // Licznik TYLKO pokoi (bez korytarzy)
+        private int roomsSpawnedCount = 0;
+
         private void Start()
         {
             if (generateOnStart) Generate();
@@ -51,21 +58,36 @@ namespace DustRunner.LevelGeneration
             Cleanup();
             if (startRoomPrefab == null) return;
 
+            // 1. Start Room
             PlaceRoom(startRoomPrefab, Vector3Int.zero, 0);
 
+            // 2. Main Crawler Loop (Generuj, aż osiągniemy minimum pokoi)
             int steps = 0;
-            int maxAttempts = targetStepCount * 20;
+            int maxAttempts = maxStepsSafety * 10; // Backup safety counter
             
-            while (steps < targetStepCount && pendingExits.Count > 0 && maxAttempts > 0)
+            // Warunek: Pętla działa dopóki mamy mniej pokoi niż chcemy I mamy otwarte wyjścia
+            while (roomsSpawnedCount < minRoomCount && pendingExits.Count > 0 && maxAttempts > 0)
             {
                 maxAttempts--;
-                if (ProcessNextStep()) steps++;
+                
+                // Próba wykonania kroku
+                if (ProcessNextStep()) 
+                {
+                    steps++;
+                }
             }
 
-            ResolveCorridorVisuals();
-            SealDungeon();
+            Debug.Log($"[Generator] Main Phase Done. Rooms: {roomsSpawnedCount}/{minRoomCount}. Steps taken: {steps}");
 
-            Debug.Log($"[Generator] Generated. Steps: {steps}, Nodes: {allNodes.Count}");
+            // 3. Ending Room Phase (NOWOŚĆ)
+            if (endingRoomPrefab != null)
+            {
+                PlaceEndingRoom();
+            }
+
+            // 4. Visuals & Cleanup
+            ResolveCorridorVisuals();
+            SealDungeon(); // Zamykamy resztę otworów
         }
 
         [ContextMenu("Cleanup")]
@@ -75,16 +97,77 @@ namespace DustRunner.LevelGeneration
             allNodes.Clear();
             pendingExits.Clear();
             debugPaths.Clear();
+            roomsSpawnedCount = 0;
             
             var children = new List<GameObject>();
             foreach (Transform child in transform) children.Add(child.gameObject);
             children.ForEach(c => DestroyImmediate(c));
         }
 
+        // --- ENDING ROOM LOGIC ---
+
+        private void PlaceEndingRoom()
+        {
+            // 1. Sortujemy dostępne wyjścia od najdalszego do najbliższego (względem Startu 0,0,0)
+            // Używamy sqrMagnitude dla wydajności (odległość euklidesowa)
+            var sortedExits = pendingExits.OrderByDescending(x => x.SourceGridPos.sqrMagnitude).ToList();
+
+            bool placed = false;
+
+            foreach (var exit in sortedExits)
+            {
+                // Próbujemy wstawić pokój końcowy
+                if (TryPlaceSpecificRoom(endingRoomPrefab, exit))
+                {
+                    Debug.Log($"[Generator] Ending Room placed at distance: {Mathf.Sqrt(exit.SourceGridPos.sqrMagnitude) * gridScale}m");
+                    
+                    // Usuwamy zużyte wyjście z listy globalnej
+                    pendingExits.Remove(exit);
+                    placed = true;
+                    break;
+                }
+            }
+
+            if (!placed)
+            {
+                Debug.LogWarning("[Generator] Failed to place Ending Room! Dungeon might be dead-ended.");
+            }
+        }
+
+        private bool TryPlaceSpecificRoom(RoomTemplate room, PendingExit entryInfo)
+        {
+            // Ta sama logika co w TryPlaceRoom, ale dla konkretnego prefaba
+            Vector3Int entryCell = entryInfo.SourceGridPos + entryInfo.Direction;
+            
+            if (logicalGrid.ContainsKey(entryCell)) return false;
+
+            foreach (var socket in room.Sockets)
+            {
+                if (socket.Type != entryInfo.RequiredType) continue;
+
+                int rotationSteps = CalculateRotationSteps(-entryInfo.Direction, socket.GetDirectionVector());
+                if (rotationSteps == -1) continue;
+
+                Vector3Int rotatedSocketLocal = RoomTemplate.RotateVectorInt(socket.LocalPosition, rotationSteps);
+                Vector3Int potentialOrigin = entryCell - rotatedSocketLocal;
+
+                if (IsValidConfiguration(room, potentialOrigin, rotationSteps, NodeType.Room))
+                {
+                    PlaceRoom(room, potentialOrigin, rotationSteps);
+                    AddDebugPath(entryInfo.SourceGridPos, entryCell, Color.magenta); // Inny kolor dla Bossa
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // --- MAIN LOOP STEP ---
+
         private bool ProcessNextStep()
         {
             if (pendingExits.Count == 0) return false;
 
+            // Wybieramy losowe wyjście (można zmienić na ważone, np. preferuj te dalej od środka)
             int index = Random.Range(0, pendingExits.Count);
             PendingExit exit = pendingExits[index];
             Vector3Int targetCell = exit.SourceGridPos + exit.Direction;
@@ -97,13 +180,25 @@ namespace DustRunner.LevelGeneration
 
             bool placed = false;
             
-            if (Random.value < corridorChance)
-                placed = TryPlaceLogicalCorridor(targetCell, exit);
+            // Decyzja co stawiamy
+            bool wantCorridor = Random.value < corridorChance;
             
+            // Jeśli mamy już wystarczająco pokoi, forsujemy korytarze (żeby nie przeładować mapy)
+            // LUB jeśli brakuje nam pokoi, zmniejszamy szansę na korytarz
+            if (roomsSpawnedCount >= minRoomCount) wantCorridor = true; 
+
+            if (wantCorridor)
+            {
+                placed = TryPlaceLogicalCorridor(targetCell, exit);
+            }
+            
+            // Jeśli nie korytarz (lub korytarz się nie zmieścił), próbujemy pokój
             if (!placed)
             {
                 placed = TryPlaceRoom(targetCell, exit);
-                if (!placed) placed = TryPlaceLogicalCorridor(targetCell, exit); // Fallback
+                
+                // Fallback: jeśli pokój się nie zmieścił, ratuj sytuację korytarzem (jest mniejszy)
+                if (!placed) placed = TryPlaceLogicalCorridor(targetCell, exit); 
             }
 
             if (placed)
@@ -115,7 +210,7 @@ namespace DustRunner.LevelGeneration
             return false;
         }
 
-        // --- PLACEMENT ---
+        // --- PLACEMENT LOGIC ---
 
         private bool TryPlaceLogicalCorridor(Vector3Int targetPos, PendingExit entryInfo)
         {
@@ -171,46 +266,23 @@ namespace DustRunner.LevelGeneration
 
         private void PlaceRoom(RoomTemplate room, Vector3Int origin, int rotSteps)
         {
-            // 1. Oblicz logiczne komórki, które zajmie pokój (względem pivota)
             List<Vector3Int> occupiedOffsets = room.GetOccupiedCells(rotSteps);
-            
-            // 2. Znajdź "Minimale Koordynaty" (Dolny-Lewy róg bounding boxa w gridzie)
-            // To odpowiada polu `GridPos` ze starego generatora (DungeonGenerator.cs)
             Vector3Int minOffset = new Vector3Int(int.MaxValue, int.MaxValue, int.MaxValue);
-            foreach (var offset in occupiedOffsets)
-            {
-                minOffset = Vector3Int.Min(minOffset, offset);
-            }
+            foreach (var offset in occupiedOffsets) minOffset = Vector3Int.Min(minOffset, offset);
             Vector3Int visualGridPos = origin + minOffset;
 
-            // 3. Oblicz Offset Wizualny (Legacy Logic z DungeonGenerator.cs)
-            // W starym kodzie offset zależy od obrotu i wymiarów (Size.x, Size.y).
-            // Tutaj mapujemy GridSize.x -> OldSize.x, GridSize.z -> OldSize.y (Depth)
+            // Legacy Offset Logic (z poprzedniej poprawki)
             Vector3 offsetVector = Vector3.zero;
-            
-            // Konwersja rotacji (0,1,2,3) na offsety Unity
             switch (rotSteps)
             {
-                case 0: 
-                    offsetVector = Vector3.zero; 
-                    break;
-                case 1: // 90 deg
-                    offsetVector = new Vector3(0, 0, room.GridSize.x * gridScale); 
-                    break;
-                case 2: // 180 deg
-                    offsetVector = new Vector3(room.GridSize.x * gridScale, 0, room.GridSize.z * gridScale); 
-                    break;
-                case 3: // 270 deg
-                    offsetVector = new Vector3(room.GridSize.z * gridScale, 0, 0); 
-                    break;
+                case 0: offsetVector = Vector3.zero; break;
+                case 1: offsetVector = new Vector3(0, 0, room.GridSize.x * gridScale); break;
+                case 2: offsetVector = new Vector3(room.GridSize.x * gridScale, 0, room.GridSize.z * gridScale); break;
+                case 3: offsetVector = new Vector3(room.GridSize.z * gridScale, 0, 0); break;
             }
 
-            // 4. Instancjacja
-            Vector3 worldPos = (Vector3)visualGridPos * gridScale;
+            Vector3 finalPos = ((Vector3)visualGridPos * gridScale) + offsetVector;
             Quaternion rotation = Quaternion.Euler(0, rotSteps * 90, 0);
-            
-            // Finalna pozycja = Pozycja Gridu (Dolny Róg) + Korekta Obrotu
-            Vector3 finalPos = worldPos + offsetVector;
 
             GameObject go = Instantiate(room.gameObject, finalPos, rotation, transform);
             go.name = $"{room.name}_{origin}";
@@ -223,7 +295,6 @@ namespace DustRunner.LevelGeneration
                 RotationSteps = rotSteps
             };
 
-            // Rejestracja socketów
             foreach (var s in room.Sockets)
             {
                 Vector3Int sPos = origin + RoomTemplate.RotateVectorInt(s.LocalPosition, rotSteps);
@@ -238,6 +309,9 @@ namespace DustRunner.LevelGeneration
             }
 
             RegisterNode(node, origin, occupiedOffsets);
+            
+            // Increment room counter
+            roomsSpawnedCount++;
         }
 
         private void RegisterNode(DungeonNode node, Vector3Int origin, List<Vector3Int> occupiedOffsets)
@@ -249,7 +323,7 @@ namespace DustRunner.LevelGeneration
             }
         }
 
-        // --- VALIDATION (Keep Current Logic) ---
+        // --- VALIDATION & UTILS ---
 
         private bool IsValidConfiguration(RoomTemplate room, Vector3Int origin, int rotSteps, NodeType type)
         {
@@ -263,11 +337,11 @@ namespace DustRunner.LevelGeneration
                 if (logicalGrid.ContainsKey(origin + localCell)) return false;
             }
 
-            // 2. Check connections (Neighbor -> Me)
+            // 2. Check Neighbor Connections
             foreach (var localCell in occupiedCells)
             {
                 Vector3Int worldCell = origin + localCell;
-                Vector3Int[] neighbors = { Vector3Int.forward, Vector3Int.back, Vector3Int.left, Vector3Int.right, Vector3Int.up, Vector3Int.down };
+                Vector3Int[] neighbors = { Vector3Int.forward, Vector3Int.back, Vector3Int.left, Vector3Int.right };
 
                 foreach (var dir in neighbors)
                 {
@@ -280,13 +354,13 @@ namespace DustRunner.LevelGeneration
                             if (type == NodeType.Corridor) doWeConnect = true; 
                             else doWeConnect = RoomHasSocketAt(room, localCell, dir, rotSteps);
 
-                            if (!doWeConnect) return false; // Blocked door!
+                            if (!doWeConnect) return false;
                         }
                     }
                 }
             }
 
-            // 3. Check outgoing (Me -> Neighbor)
+            // 3. Check Outgoing into Walls
             if (type == NodeType.Room)
             {
                 foreach (var socket in room.Sockets)
@@ -297,48 +371,13 @@ namespace DustRunner.LevelGeneration
 
                     if (logicalGrid.TryGetValue(target, out DungeonNode targetNode))
                     {
-                        if (!HasSocketFacing(targetNode, target, -sDir)) return false; // Wall hit!
+                        if (!HasSocketFacing(targetNode, target, -sDir)) return false;
                     }
                 }
             }
 
             return true;
         }
-
-        // --- SEALING (Keep Fixed Logic) ---
-
-        private void SealDungeon()
-        {
-            if (corridorTiles.DoorBlocker == null) return;
-            HashSet<Vector3Int> sealedPositions = new HashSet<Vector3Int>();
-
-            foreach (var node in allNodes)
-            {
-                if (node.Type != NodeType.Room) continue;
-
-                foreach (var socket in node.ActiveSocketsWorld)
-                {
-                    Vector3Int targetCell = socket.pos + socket.dir;
-                    if (!logicalGrid.ContainsKey(targetCell))
-                    {
-                        Vector3 center = (Vector3)socket.pos * gridScale + (Vector3.one * gridScale * 0.5f);
-                        Vector3 blockerPos = center + ((Vector3)socket.dir * (gridScale * 0.5f));
-                        
-                        Vector3Int discreteBlockerPos = Vector3Int.RoundToInt(blockerPos * 100); 
-
-                        if (!sealedPositions.Contains(discreteBlockerPos))
-                        {
-                            Quaternion rot = Quaternion.LookRotation((Vector3)socket.dir);
-                            var go = Instantiate(corridorTiles.DoorBlocker, blockerPos, rot, transform);
-                            go.name = "Seal";
-                            sealedPositions.Add(discreteBlockerPos);
-                        }
-                    }
-                }
-            }
-        }
-
-        // --- HELPERS ---
 
         private bool HasSocketFacing(DungeonNode node, Vector3Int nodeWorldPos, Vector3Int worldLookDir)
         {
@@ -370,6 +409,8 @@ namespace DustRunner.LevelGeneration
             return -1;
         }
 
+        // --- CORRIDOR VISUALS ---
+
         private void ResolveCorridorVisuals()
         {
             Vector3 centerOffset = new Vector3(gridScale * 0.5f, 0, gridScale * 0.5f);
@@ -379,14 +420,13 @@ namespace DustRunner.LevelGeneration
                 if (node.Type != NodeType.Corridor) continue;
                 
                 Vector3Int pos = Vector3Int.zero;
-                bool found = false;
-                foreach(var kvp in logicalGrid) { if(kvp.Value == node) { pos = kvp.Key; found = true; break; } }
-                if(!found) continue;
+                // Find pos brute-force (można zoptymalizować dodając pole Position do Node)
+                foreach(var kvp in logicalGrid) { if(kvp.Value == node) { pos = kvp.Key; break; } }
 
-                bool n = HasConnection(pos, Vector3Int.forward);
-                bool s = HasConnection(pos, Vector3Int.back);
-                bool e = HasConnection(pos, Vector3Int.right);
-                bool w = HasConnection(pos, Vector3Int.left);
+                bool n = HasConnection(pos, Vector3Int.forward); // +Z
+                bool s = HasConnection(pos, Vector3Int.back);    // -Z
+                bool e = HasConnection(pos, Vector3Int.right);   // +X
+                bool w = HasConnection(pos, Vector3Int.left);    // -X
 
                 GameObject prefab = corridorTiles.Straight;
                 float yRot = 0;
@@ -394,17 +434,45 @@ namespace DustRunner.LevelGeneration
 
                 switch (mask)
                 {
+                    // Straight
                     case 5: prefab = corridorTiles.Straight; yRot = 0; break;
                     case 10: prefab = corridorTiles.Straight; yRot = 90; break;
+                    
+                    // Corner (zakładamy model L: 0 rot łączy N+E)
                     case 3: prefab = corridorTiles.Corner; yRot = 0; break;
                     case 6: prefab = corridorTiles.Corner; yRot = 90; break;
                     case 12: prefab = corridorTiles.Corner; yRot = 180; break;
                     case 9: prefab = corridorTiles.Corner; yRot = 270; break;
-                    case 7: prefab = corridorTiles.TJunction; yRot = 0; break;
-                    case 14: prefab = corridorTiles.TJunction; yRot = 90; break;
-                    case 13: prefab = corridorTiles.TJunction; yRot = 180; break;
-                    case 11: prefab = corridorTiles.TJunction; yRot = 270; break;
+
+                    // T-Junction (Wall Logic Fixed)
+                    // Maska 11 (N+E+W) -> Wall S -> Rot 0 (Default)
+                    case 11: 
+                        prefab = corridorTiles.TJunction; 
+                        yRot = 0; 
+                        break; 
+                    
+                    // Maska 7 (N+E+S) -> Wall W -> Rot 90 (Ściana S -> W)
+                    case 7: 
+                        prefab = corridorTiles.TJunction; 
+                        yRot = 90; 
+                        break;
+
+                    // Maska 14 (E+S+W) -> Wall N -> Rot 180 (Ściana S -> N)
+                    case 14: 
+                        prefab = corridorTiles.TJunction; 
+                        yRot = 180; 
+                        break;
+
+                    // Maska 13 (S+W+N) -> Wall E -> Rot 270 (Ściana S -> E)
+                    case 13: 
+                        prefab = corridorTiles.TJunction; 
+                        yRot = 270; 
+                        break;
+
+                    // Cross
                     case 15: prefab = corridorTiles.Cross; break;
+                    
+                    // Dead Ends (zakładamy model: wyjście na N)
                     case 1: prefab = corridorTiles.DeadEnd; yRot = 0; break;
                     case 2: prefab = corridorTiles.DeadEnd; yRot = 90; break;
                     case 4: prefab = corridorTiles.DeadEnd; yRot = 180; break;
@@ -429,6 +497,36 @@ namespace DustRunner.LevelGeneration
                 return HasSocketFacing(node, neighbor, -dir);
             }
             return false;
+        }
+
+        private void SealDungeon()
+        {
+            if (corridorTiles.DoorBlocker == null) return;
+            HashSet<Vector3Int> sealedPositions = new HashSet<Vector3Int>();
+
+            foreach (var node in allNodes)
+            {
+                if (node.Type != NodeType.Room) continue;
+
+                foreach (var socket in node.ActiveSocketsWorld)
+                {
+                    Vector3Int targetCell = socket.pos + socket.dir;
+                    if (!logicalGrid.ContainsKey(targetCell))
+                    {
+                        Vector3 center = (Vector3)socket.pos * gridScale + (Vector3.one * gridScale * 0.5f);
+                        Vector3 blockerPos = center + ((Vector3)socket.dir * (gridScale * 0.5f));
+                        Vector3Int discreteBlockerPos = Vector3Int.RoundToInt(blockerPos * 100); 
+
+                        if (!sealedPositions.Contains(discreteBlockerPos))
+                        {
+                            Quaternion rot = Quaternion.LookRotation((Vector3)socket.dir);
+                            var go = Instantiate(corridorTiles.DoorBlocker, blockerPos, rot, transform);
+                            go.name = "Seal";
+                            sealedPositions.Add(discreteBlockerPos);
+                        }
+                    }
+                }
+            }
         }
 
         private void AddDebugPath(Vector3Int start, Vector3Int end, Color c)

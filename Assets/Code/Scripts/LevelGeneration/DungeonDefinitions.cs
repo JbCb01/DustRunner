@@ -46,7 +46,6 @@ namespace DustRunner.LevelGeneration
         }
     }
 
-    // Struktura do trzymania prefabów korytarzy dla Autotilingu
     [Serializable]
     public struct CorridorTileSet
     {
@@ -56,7 +55,6 @@ namespace DustRunner.LevelGeneration
         public GameObject TJunction;  // T-Shape
         public GameObject Cross;      // X-Shape
         public GameObject DeadEnd;    // Opcjonalnie, jeśli algorytm zostawi ślepą uliczkę
-        public GameObject VerticalShaft; // Opcjonalnie do drabin
         [Header("Utility")]
         public GameObject DoorBlocker;
     }
