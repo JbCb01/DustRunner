@@ -26,12 +26,14 @@ public class Door : MonoBehaviour
     {
         _closedRotation = transform.localRotation;
         
-        // Auto-wire the Usable event if forgotten in Editor
         var usable = GetComponent<Usable>();
-        usable.OnInteract.AddListener(OnInteract);
+        if (usable != null)
+        {
+            usable.OnUsed.AddListener(OnInteract);
+        }
     }
 
-    public void OnInteract(Vector3 playerPos)
+    public void OnInteract(Player player)
     {
         if (_animationCoroutine != null) StopCoroutine(_animationCoroutine);
         
@@ -41,7 +43,6 @@ public class Door : MonoBehaviour
 
         if (IsOpen)
         {
-            // Calculate Open Rotation
             float finalAngle = OpenAngle;
 
             if (Direction == OpenDirection.AlwaysLeft)
@@ -54,12 +55,10 @@ public class Door : MonoBehaviour
             }
             else if (Direction == OpenDirection.AutoAwayFromPlayer)
             {
-                // Calculate Dot Product to see if player is in front or behind
+                Vector3 playerPos = player.transform.position;
                 Vector3 doorToPlayer = playerPos - transform.position;
                 float dot = Vector3.Dot(transform.forward, doorToPlayer.normalized);
 
-                // If dot > 0, player is in front (Z+), so open negative to swing away.
-                // If dot < 0, player is behind (Z-), so open positive to swing away.
                 finalAngle = dot > 0 ? -OpenAngle : OpenAngle;
             }
 
@@ -67,7 +66,6 @@ public class Door : MonoBehaviour
         }
         else
         {
-            // Return to closed
             targetRotation = _closedRotation;
         }
 
@@ -82,5 +80,6 @@ public class Door : MonoBehaviour
             yield return null;
         }
         transform.localRotation = target;
+        _animationCoroutine = null;
     }
 }

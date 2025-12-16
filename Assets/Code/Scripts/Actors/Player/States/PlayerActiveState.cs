@@ -15,32 +15,51 @@ public abstract class PlayerActiveState : State<Player>
             return;
         }
 
-        HandleInteractionInput();
-        HandleInventoryInput();
-    }
-
-    private void HandleInteractionInput()
-    {
         bool interactPressed = Owner.Input.Player.Interact.WasPressedThisFrame();
-        bool interactHeld = Owner.Input.Player.Interact.IsPressed();
-        
-        Owner.Interaction.SetInputs(interactPressed, interactHeld);
+        float scrollValue = Owner.Input.Player.ScrollSlot.ReadValue<Vector2>().y;
+        bool isLooting = Owner.Interaction.CurrentScrollable != null;
+        if(isLooting)
+        {
+            Owner.Interaction.HandleInteractionInput(interactPressed, scrollValue);
+        }
+        else
+        {
+            Owner.Interaction.HandleInteractionInput(interactPressed, 0f);
+            if (Mathf.Abs(scrollValue) > 0.01f)
+            {
+                int direction = scrollValue > 0 ? 1 : -1;
+                Owner.Inventory.CycleSlot(direction);
+            }
+        }
+
+        HandleCombatInput();
+        HandleSlotSelectionInput();
     }
 
-    private void HandleInventoryInput()
+    private void HandleCombatInput()
     {
-        bool primaryUse = Owner.Input.Player.Use.WasPressedThisFrame();
+        bool primaryUse = Owner.Input.Player.Use.WasPressedThisFrame(); // Lub IsPressed() dla ognia ciągłego
         bool secondaryUse = Owner.Input.Player.AltUse.WasPressedThisFrame();
-        float scrollDelta = Owner.Input.Player.ScrollSlot.ReadValue<Vector2>().y;
 
-        int slotToSelect = -1;
+        // Przekazujemy do Inventory, które przekaże do trzymanego Equipable
+        Owner.Inventory.HandleEquipmentInput(primaryUse, secondaryUse);
+    }
+
+    private void HandleSlotSelectionInput()
+    {
+        // Twoja oryginalna logika dla klawiszy 1-9 (zachowana)
         if (Owner.Input.Player.SwitchSlot.WasPressedThisFrame())
         {
             var control = Owner.Input.Player.SwitchSlot.activeControl;
-            if (control != null) slotToSelect = GetSlotFromControl(control);
+            if (control != null)
+            {
+                int slotIndex = GetSlotFromControl(control);
+                if (slotIndex != -1)
+                {
+                    Owner.Inventory.SelectSlot(slotIndex);
+                }
+            }
         }
-
-        Owner.Inventory.SetInputs(primaryUse, secondaryUse, scrollDelta, slotToSelect);
     }
 
     protected int GetSlotFromControl(InputControl control)

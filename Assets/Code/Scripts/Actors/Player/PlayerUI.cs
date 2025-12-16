@@ -1,88 +1,149 @@
 using UnityEngine;
+using TMPro;
+using System.Text;
 
 public class PlayerUI : MonoBehaviour
 {
     [Header("References")]
     public Player Player;
     public Crosshair Crosshair;
+    public TextMeshProUGUI InteractionListText;
+    public TextMeshProUGUI AmmoCounterText;
+    public TextMeshProUGUI EquipmentListText;
 
-    [Header("Accuracy / Spread Settings")]
-    public float RestingRadius = 10f;
-    public float WalkRadius = 25f;
-    public float SprintRadius = 45f;
-    public float SpreadSpeed = 10f; // How fast it expands/shrinks
-
-    [Header("Interaction Settings")]
-    public float InteractionDotRadius = 4f;
-    public Color DefaultColor = Color.white;
-    public Color InteractionColor = Color.red;
+    [Header("Settings")]
+    public float NormalRadius = 2f;
+    public float InteractionRadius = 6f; // Celownik powiększa się/zmienia przy interakcji
+    public Color NormalColor = Color.white;
+    public Color InteractionColor = new Color(1f, 0.5f, 0f); // Np. Pomarańczowy/Amber
 
     private float _currentRadius;
     private float _targetRadius;
-    private bool _isFocusingInteraction;
 
     public void Initialize(Player player)
     {
         Player = player;
-    }
-
-    private void Start()
-    {
-        if (Crosshair != null)
-        {
-            _currentRadius = RestingRadius;
-            Crosshair.color = DefaultColor;
-        }
+        if (InteractionListText) InteractionListText.text = "";
+        if (AmmoCounterText) AmmoCounterText.text = "";
+        if (EquipmentListText) EquipmentListText.text = "";
     }
 
     private void Update()
     {
-        if (Player.Controller == null || Crosshair == null || Player.Interaction == null) return;
+        if (Player == null) return;
 
-        // 1. Determine State
-        // Check if we are looking at a Usable object
-        _isFocusingInteraction = Player.Interaction.CurrentUsable != null;
+        UpdateInteractionUI();   // Środek (Celownik + Loot)
+        UpdateEquipmentSlotUI(); // Prawy Dół (Lista broni)
+        UpdateAmmoCounterUI();   // Lewy Dół (Ammo)
+        
+        UpdateCrosshairVisuals();
+    }
 
-        // 2. Calculate Target Radius
-        if (_isFocusingInteraction)
+    private void UpdateInteractionUI()
+    {
+        if (Player.Interaction == null) return;
+
+        if (Player.Interaction.CurrentScrollable != null)
         {
-            // Mode: INTERACTION (Small filled dot)
-            _targetRadius = InteractionDotRadius;
-            Crosshair.SetFilled(true);
-            Crosshair.color = Color.Lerp(Crosshair.color, InteractionColor, Time.deltaTime * 10f);
+            string lootText = Player.Interaction.CurrentScrollable.GetCurrentSelectionInfo();
+            SetText(InteractionListText, lootText);
+            SetCrosshairState(true);
+        }
+        else if (Player.Interaction.CurrentInteractable != null && Player.Interaction.CurrentInteractable.CanInteract)
+        {
+            SetText(InteractionListText, ""); 
+            SetCrosshairState(true);
         }
         else
         {
-            // Mode: STANDARD (Dynamic Ring)
-            Crosshair.SetFilled(false);
-            Crosshair.color = Color.Lerp(Crosshair.color, DefaultColor, Time.deltaTime * 10f);
+            SetText(InteractionListText, "");
+            SetCrosshairState(false);
+        }
+    }
 
-            // Calculate spread based on movement speed
-            // Accessing the KCC Motor velocity directly
-            float speed = Player.Controller.Motor.Velocity.magnitude;
-            
-            // Simple logic: If moving fast, expand. If slow, rest.
-            // You can map this to WalkStableMoveSpeed / SprintStableMoveSpeed from your Controller
-            if (speed > 15f) // Sprint threshold roughly
+    private void UpdateAmmoCounterUI()
+    {
+        if (AmmoCounterText == null || Player.Inventory == null) return;
+
+        var currentItem = Player.Inventory.CurrentEquippedItem;
+
+        if (currentItem != null)
+        {
+            string status = currentItem.GetAmmoStatus();
+
+            if (!string.IsNullOrEmpty(status))
             {
-                _targetRadius = SprintRadius;
-            }
-            else if (speed > 0.1f)
-            {
-                _targetRadius = WalkRadius;
-            }
-            else
-            {
-                _targetRadius = RestingRadius;
+                AmmoCounterText.text = status;
+                return;
             }
         }
 
-        // 3. Smoothly animate the radius
-        // We use Lerp to make it feel "springy" and responsive
-        _currentRadius = Mathf.Lerp(_currentRadius, _targetRadius, Time.deltaTime * SpreadSpeed);
+        AmmoCounterText.text = "";
+    }
 
-        // 4. Apply to the Ring
-        // Keep thickness constant (e.g., 2f) so it doesn't get fat when expanding
+    private void UpdateEquipmentSlotUI()
+    {
+        if (EquipmentListText == null || Player.Inventory == null) return;
+
+        var slots = Player.Inventory.GetSlots();
+        int currentIndex = Player.Inventory.GetCurrentSlotIndex();
+
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            string itemName = (slots[i] != null) ? slots[i].ItemName : "---";
+            
+            if (i == currentIndex)
+            {
+                sb.AppendLine($"> [ {itemName} ]");
+            }
+            else
+            {
+                sb.AppendLine($"  {itemName}");
+            }
+        }
+
+        EquipmentListText.text = sb.ToString();
+    }
+
+    private void SetInteractionText(string text)
+    {
+        if (InteractionListText != null)
+        {
+            InteractionListText.text = text;
+        }
+    }
+
+    private void SetText(TextMeshProUGUI tmp, string text)
+    {
+        if (tmp != null) tmp.text = text;
+    }
+
+    private void SetCrosshairState(bool isInteraction)
+    {
+        if (Crosshair == null) return;
+
+        if (isInteraction)
+        {
+            _targetRadius = InteractionRadius;
+            Crosshair.color = Color.Lerp(Crosshair.color, InteractionColor, Time.deltaTime * 15f);
+            Crosshair.SetFilled(true);
+        }
+        else
+        {
+            _targetRadius = NormalRadius;
+            Crosshair.color = Color.Lerp(Crosshair.color, NormalColor, Time.deltaTime * 10f);
+            Crosshair.SetFilled(false);
+        }
+    }
+
+    private void UpdateCrosshairVisuals()
+    {
+        if (Crosshair == null) return;
+        _currentRadius = Mathf.Lerp(_currentRadius, _targetRadius, Time.deltaTime * 20f);
         Crosshair.SetRadius(_currentRadius, 2f);
     }
+
+    
 }

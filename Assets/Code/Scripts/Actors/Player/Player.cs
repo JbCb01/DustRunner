@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -66,8 +67,7 @@ public class Player : MonoBehaviour
     {
         StateMachine.LogicUpdate();
         HandlePause();
-        
-        Interaction.UpdateInteractionLogic();
+        Interaction.UpdateInteractionScan();
     }
     
     private void FixedUpdate()
