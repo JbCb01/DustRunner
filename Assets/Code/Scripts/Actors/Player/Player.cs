@@ -18,6 +18,7 @@ public class Player : MonoBehaviour
     public PlayerUI UI;
     public PlayerCamera Camera;
     public Transform Head;
+    public WeaponSway WeaponSway;
 
     [Header("Configuration")]
     public PlayerSettings Settings;
@@ -37,6 +38,7 @@ public class Player : MonoBehaviour
         Interaction.Initialize(this);
         Inventory.Initialize(this);
         UI.Initialize(this);
+        WeaponSway.Initialize(this); // FIXME: Przenieść do PlayerInventory?
 
         Input = new PlayerControls();
         StateMachine = new StateMachine<Player>(this);

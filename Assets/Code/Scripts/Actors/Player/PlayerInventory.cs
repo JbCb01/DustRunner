@@ -8,109 +8,109 @@ public class PlayerInventory : MonoBehaviour
     public Transform EquipPoint;
 
     [Header("Settings")]
-    public int MaxSlots = 5;
+    [SerializeField] public int maxSlots = 3;
+    [SerializeField] private float dropForce = 5f;
 
-    private Dictionary<string, int> _backpack = new Dictionary<string, int>();
-    private Equipable[] _slots;
-    private int _currentSlotIndex = -1;
+    // Plecak na surowce (słownik danych)
+    private Dictionary<ItemData, int> _backpack = new Dictionary<ItemData, int>();
 
-    public Equipable CurrentEquippedItem { get; private set; }
+    public int CurrentSlotIndex { get; private set; } = 0;
+    public Equipable[] Slots;
+
+    public Equipable CurrentEquippedItem => Slots[CurrentSlotIndex];
 
     public void Initialize(Player player)
     {
         Player = player;
-        _slots = new Equipable[MaxSlots];
+        Slots = new Equipable[maxSlots];
     }
 
-    public void AddResource(string resourceID, int amount)
+    public void HandleLoot(ItemData item, int amount)
     {
-        if (string.IsNullOrEmpty(resourceID)) return;
+        if (item == null) return;
 
-        if (_backpack.ContainsKey(resourceID))
+        if (item is PickableData)
         {
-            _backpack[resourceID] += amount;
+            AddResource(item, amount);
+        }
+        else if (item is EquipableData equipableData)
+        {
+            SpawnAndEquipWeapon(equipableData);
+        }
+    }
+
+    private void SpawnAndEquipWeapon(EquipableData data)
+    {
+        if (data.WorldPrefab == null)
+        {
+            Debug.LogError($"[Inventory] EquipableData '{data.DisplayName}' has no WorldPrefab assigned!");
+            return;
+        }
+
+        GameObject weaponObj = Instantiate(data.WorldPrefab);
+        Equipable newWeapon = weaponObj.GetComponent<Equipable>();
+
+        if (newWeapon != null)
+        {
+            if (newWeapon.Data == null) newWeapon.Data = data;
+            TryEquipItem(newWeapon);
         }
         else
         {
-            _backpack.Add(resourceID, amount);
+            Debug.LogError($"[Inventory] Prefab for '{data.DisplayName}' is missing Equipable component!");
+            Destroy(weaponObj);
+        }
+    }
+
+    public void TryEquipItem(Equipable newItem)
+    {
+        if (newItem == null) return;
+
+        if (Slots[CurrentSlotIndex] != null)
+        {
+            DropItemFromSlot(CurrentSlotIndex);
         }
 
-        Debug.Log($"[Inventory] Resource Added: {resourceID} (Total: {_backpack[resourceID]})");
+        Slots[CurrentSlotIndex] = newItem;
         
-        // Tu można dodać wywołanie UI update amunicji, jeśli jest widoczne
+        newItem.transform.SetParent(EquipPoint);
+        newItem.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        
+        newItem.AssignOwner(Player); 
+        newItem.OnEquip();
+        
+        Debug.Log($"[Inventory] Equipped: {newItem.name}");
     }
 
-    public int GetResourceCount(string resourceID)
+    public void DropCurrentItem()
     {
-        if (_backpack.TryGetValue(resourceID, out int count))
-        {
-            return count;
-        }
-        return 0;
+        if (CurrentEquippedItem == null) return;
+        DropItemFromSlot(CurrentSlotIndex);
     }
 
-    public bool TryConsumeResource(string resourceID, int amount)
+    private void DropItemFromSlot(int index)
     {
-        if (GetResourceCount(resourceID) >= amount)
-        {
-            _backpack[resourceID] -= amount;
-            return true;
-        }
-        return false;
+        Equipable itemToDrop = Slots[index];
+        if (itemToDrop == null) return;
+
+        Slots[index] = null;
+
+        // Wyliczanie kierunku wyrzutu (z kamery gracza)
+        Vector3 dropDir = Player.Camera.Main.transform.forward;
+        dropDir = (dropDir + Vector3.up * 0.15f).normalized;
+
+        itemToDrop.Throw(dropDir, dropForce);
+        
+        Debug.Log($"[Inventory] Dropped: {itemToDrop.name}");
     }
 
-    public bool TryEquipItem(Equipable newItem)
+    public void HandleEquipmentInput(bool primary, bool secondary, bool dropItem)
     {
-        for (int i = 0; i < _slots.Length; i++)
+        if (dropItem)
         {
-            if (_slots[i] == null)
-            {
-                _slots[i] = newItem;
-                
-                newItem.transform.SetParent(EquipPoint);
-                newItem.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-                
-                if (CurrentEquippedItem == null)
-                {
-                    SelectSlot(i);
-                }
-                else
-                {
-                    newItem.gameObject.SetActive(false);
-                }
-                
-                Debug.Log($"[Inventory] Equipped {newItem.ItemName} in slot {i}");
-                return true;
-            }
+            HandleDropInput();
+            return;
         }
-
-        Debug.Log("[Inventory] No free slots!");
-        return false;
-    }
-
-    public void SelectSlot(int slotIndex)
-    {
-        if (slotIndex < 0 || slotIndex >= _slots.Length) return;
-
-        // Dezaktywuj obecny
-        if (CurrentEquippedItem != null)
-        {
-            CurrentEquippedItem.OnUnequip();
-        }
-
-        _currentSlotIndex = slotIndex;
-        CurrentEquippedItem = _slots[slotIndex];
-
-        // Aktywuj nowy
-        if (CurrentEquippedItem != null)
-        {
-            CurrentEquippedItem.OnEquip(this);
-        }
-    }
-
-    // Input dla broni (LPM/PPM)
-    public void HandleEquipmentInput(bool primary, bool secondary)
-    {
         if (CurrentEquippedItem != null)
         {
             if (primary) CurrentEquippedItem.UsePrimary();
@@ -118,29 +118,83 @@ public class PlayerInventory : MonoBehaviour
         }
     }
 
+    public void HandleDropInput()
+    {
+        // Sprawdzamy czy patrzymy na skrzynię
+        Lootable targetContainer = Player.Interaction.CurrentInteractable as Lootable;
+
+        if (CurrentEquippedItem == null) return;
+
+        if (targetContainer != null)
+        {
+            targetContainer.AddItem(CurrentEquippedItem.Data);
+            
+            Equipable itemToRemove = CurrentEquippedItem;
+            Slots[CurrentSlotIndex] = null;
+            
+            Destroy(itemToRemove.gameObject);
+            
+            Debug.Log("[Inventory] Stored item in container.");
+        }
+        else
+        {
+            DropCurrentItem();
+        }
+    }
+
+    // --- ZARZĄDZANIE SLOTAMI ---
+
+    public void SelectSlot(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= Slots.Length || slotIndex == CurrentSlotIndex) return;
+
+        if (CurrentEquippedItem != null) CurrentEquippedItem.OnUnequip();
+
+        CurrentSlotIndex = slotIndex;
+
+        if (CurrentEquippedItem != null) CurrentEquippedItem.OnEquip();
+    }
+
     public void CycleSlot(int direction)
     {
-        if (_slots == null || _slots.Length == 0) return;
-
-        // direction: > 0 (góra/poprzedni), < 0 (dół/następny)
-        // Oblicz nowy indeks z zawijaniem (modulo)
-        int newIndex = _currentSlotIndex + (direction > 0 ? -1 : 1);
+        int nextIndex = CurrentSlotIndex + (direction > 0 ? -1 : 1);
         
-        // Obsługa ujemnych indeksów i przekroczenia zakresu
-        if (newIndex < 0) newIndex = _slots.Length - 1;
-        if (newIndex >= _slots.Length) newIndex = 0;
+        if (nextIndex < 0) nextIndex = Slots.Length - 1;
+        if (nextIndex >= Slots.Length) nextIndex = 0;
 
-        SelectSlot(newIndex);
+        SelectSlot(nextIndex);
     }
 
-    public Equipable[] GetSlots()
+
+    public void AddResource(ItemData item, int amount)
     {
-        return _slots;
+        if (item == null) return;
+        
+        if (_backpack.ContainsKey(item)) 
+        {
+            _backpack[item] += amount;
+        }
+        else 
+        {
+            _backpack.Add(item, amount);
+        }
+
+        Debug.Log($"[Inventory] Added {amount}x {item.DisplayName}. Total: {_backpack[item]}");
     }
-    
-    public int GetCurrentSlotIndex()
+
+    public int GetResourceCount(ItemData item)
     {
-        return _currentSlotIndex;
+        if (item == null) return 0;
+        return _backpack.TryGetValue(item, out int count) ? count : 0;
+    }
+
+    public bool TryConsumeResource(ItemData item, int amount)
+    {
+        if (GetResourceCount(item) >= amount)
+        {
+            _backpack[item] -= amount;
+            return true;
+        }
+        return false;
     }
 }
-                

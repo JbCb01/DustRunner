@@ -40,9 +40,10 @@ public abstract class PlayerActiveState : State<Player>
     {
         bool primaryUse = Owner.Input.Player.Use.WasPressedThisFrame(); // Lub IsPressed() dla ognia ciągłego
         bool secondaryUse = Owner.Input.Player.AltUse.WasPressedThisFrame();
+        bool dropItem = Owner.Input.Player.Drop.WasPressedThisFrame();
 
         // Przekazujemy do Inventory, które przekaże do trzymanego Equipable
-        Owner.Inventory.HandleEquipmentInput(primaryUse, secondaryUse);
+        Owner.Inventory.HandleEquipmentInput(primaryUse, secondaryUse, dropItem);
     }
 
     private void HandleSlotSelectionInput()

@@ -1,4 +1,3 @@
-// Assets/Code/Scripts/Actors/Player/PlayerInteraction.cs
 using UnityEngine;
 
 public class PlayerInteraction : MonoBehaviour
@@ -8,9 +7,8 @@ public class PlayerInteraction : MonoBehaviour
 
     [Header("Settings")]
     public float InteractionRange = 3.0f;
-    public LayerMask InteractionLayers; // Upewnij się, że ustawisz to w Unity!
+    public LayerMask InteractionLayers;
 
-    // Public properties for UI to read
     public IInteractable CurrentInteractable { get; private set; }
     public IScrollable CurrentScrollable { get; private set; }
 
@@ -19,7 +17,6 @@ public class PlayerInteraction : MonoBehaviour
         Player = player;
     }
 
-    // Wywoływane z Player.cs w Update()
     public void UpdateInteractionScan()
     {
         CurrentInteractable = null;
@@ -33,19 +30,16 @@ public class PlayerInteraction : MonoBehaviour
         // Raycast
         if (Physics.Raycast(ray, out RaycastHit hit, InteractionRange, InteractionLayers, QueryTriggerInteraction.Collide))
         {
-            // 1. Sprawdź komponent na uderzonym obiekcie
             if (hit.collider.TryGetComponent<IInteractable>(out var interactable))
             {
                 CurrentInteractable = interactable;
             }
-            // 2. Sprawdź Rigidbody (dla obiektów złożonych, np. collider dziecka, skrypt na rodzicu)
             else if (hit.collider.attachedRigidbody != null && 
                      hit.collider.attachedRigidbody.TryGetComponent<IInteractable>(out var rbInteractable))
             {
                 CurrentInteractable = rbInteractable;
             }
 
-            // 3. Jeśli mamy interakcję, sprawdź czy obsługuje Scroll (Lootable)
             if (CurrentInteractable != null && CurrentInteractable is IScrollable scrollable)
             {
                 CurrentScrollable = scrollable;
@@ -53,26 +47,21 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
-    // Wywoływane z Player.cs przy Inputcie (Action Context)
     public void HandleInteractionInput(bool interactPressed, float scrollValue)
     {
-        // 1. Scroll ma priorytet jeśli patrzymy na kontener
         if (CurrentScrollable != null && Mathf.Abs(scrollValue) > 0.05f)
         {
             CurrentScrollable.OnScroll(scrollValue);
             return; // Scrollowanie lootem blokuje zmianę broni
         }
 
-        // 2. Interakcja
         if (interactPressed && CurrentInteractable != null && CurrentInteractable.CanInteract)
         {
             CurrentInteractable.Interact(Player);
         }
         
-        // Pushable (zostawiamy fizykę w spokoju, jest obsługiwana przez CharacterController collisions)
     }
     
-    // Metoda dla Pushable (zgodnie z Twoim starym kodem, jeśli chcesz zachować pchanie "ciałem")
     public bool ProcessPhysicalInteraction(Collider hitCollider, Vector3 characterVelocity)
     {
         if (hitCollider.attachedRigidbody == null) return false;

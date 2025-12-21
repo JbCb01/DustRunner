@@ -69,7 +69,7 @@ public class PlayerUI : MonoBehaviour
 
         if (currentItem != null)
         {
-            string status = currentItem.GetAmmoStatus();
+            string status = currentItem.GetUIStatus();
 
             if (!string.IsNullOrEmpty(status))
             {
@@ -85,14 +85,14 @@ public class PlayerUI : MonoBehaviour
     {
         if (EquipmentListText == null || Player.Inventory == null) return;
 
-        var slots = Player.Inventory.GetSlots();
-        int currentIndex = Player.Inventory.GetCurrentSlotIndex();
+        var slots = Player.Inventory.Slots;
+        int currentIndex = Player.Inventory.CurrentSlotIndex;
 
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < slots.Length; i++)
         {
-            string itemName = (slots[i] != null) ? slots[i].ItemName : "---";
+            string itemName = (slots[i] != null) ? slots[i].Data.DisplayName : "---";
             
             if (i == currentIndex)
             {
@@ -106,15 +106,6 @@ public class PlayerUI : MonoBehaviour
 
         EquipmentListText.text = sb.ToString();
     }
-
-    private void SetInteractionText(string text)
-    {
-        if (InteractionListText != null)
-        {
-            InteractionListText.text = text;
-        }
-    }
-
     private void SetText(TextMeshProUGUI tmp, string text)
     {
         if (tmp != null) tmp.text = text;
