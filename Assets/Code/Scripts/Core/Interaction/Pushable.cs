@@ -4,10 +4,8 @@ using UnityEngine;
 public class Pushable : MonoBehaviour
 {
     [Header("Settings")]
-    [Tooltip("Multiplier for the force applied by the player.")]
     public float PushPower = 2.0f;
-
-    [Tooltip("If true, the object can be pushed.")]
+    public float ImpactPower = 5.0f;
     public bool IsPushable = true;
 
     public Rigidbody Rigidbody { get; private set; }
@@ -22,5 +20,12 @@ public class Pushable : MonoBehaviour
     {
         if (!IsPushable || Rigidbody.isKinematic) return;
         Rigidbody.AddForce(direction * PushPower, ForceMode.VelocityChange);
+    }
+
+    public void Hit(Vector3 point, Vector3 direction, float weaponForceMultiplier = 1f)
+    {
+        if (!IsPushable || Rigidbody.isKinematic) return;
+
+        Rigidbody.AddForceAtPosition(ImpactPower * weaponForceMultiplier * direction, point, ForceMode.Impulse);
     }
 }

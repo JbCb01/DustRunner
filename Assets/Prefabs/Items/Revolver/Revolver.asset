@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: Revolver
   m_EditorClassIdentifier: Assembly-CSharp::EquipableData
-  ID: 
-  DisplayName: 
-  WorldPrefab: {fileID: 0}
+  ID: Revolver
+  DisplayName: Revolver
+  WorldPrefab: {fileID: 1161232501136756791, guid: 5f9880af201870b4394811333a08733b, type: 3}
+  ViewModelPrefab: {fileID: 842754854390560609, guid: 1a0b663bfc6c8f140a927db71b02b24f, type: 3}

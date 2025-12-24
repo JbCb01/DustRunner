@@ -13,11 +13,10 @@ namespace DustRunner.LevelGeneration
         public List<RoomSocket> Sockets = new List<RoomSocket>();
 
         [Header("Editor")]
-        public Color GizmoColor = new Color(0, 1, 0, 0.4f);
-        private const float GRID_SCALE = 5.0f; // Zgodne z Twoim projektem
+        [SerializeField] private bool _drawGizmos = true;
+        [SerializeField] private Color GizmoColor = new Color(0, 1, 0, 0.4f);
+        private const float GRID_SCALE = 5.0f;
 
-        // --- MATH ---
-        // Bezpieczna rotacja na intach (90 stopni Y)
         public static Vector3Int RotateVectorInt(Vector3Int v, int angle90Steps)
         {
             int steps = angle90Steps % 4;
@@ -53,6 +52,7 @@ namespace DustRunner.LevelGeneration
 
         private void OnDrawGizmos()
         {
+            if (!_drawGizmos) return;
             Gizmos.matrix = transform.localToWorldMatrix;
             
             Vector3 size = new Vector3(GridSize.x, GridSize.y, GridSize.z) * GRID_SCALE;

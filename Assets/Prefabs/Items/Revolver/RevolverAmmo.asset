@@ -12,6 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: RevolverAmmo
   m_EditorClassIdentifier: Assembly-CSharp::PickableData
-  ID: 
-  DisplayName: 
-  WorldPrefab: {fileID: 0}
+  ID: RevolverAmmo
+  DisplayName: .44 Round

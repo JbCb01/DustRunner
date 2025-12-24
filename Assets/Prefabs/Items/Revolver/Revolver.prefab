@@ -152,8 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcaaa19fd05bfd94c82987f0c93fee25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RangedWeapon
-  ItemName: Revolver
-  ammoTypeID: RevolverAmmo
+  Data: {fileID: 11400000, guid: 90e2b062e53e1e34191c9a3e1ed5b30d, type: 2}
   damage: 25
   range: 100
   fireRate: 1
@@ -162,4 +161,9 @@ MonoBehaviour:
     m_Bits: 4294967295
   clipSize: 6
   currentClip: 6
-  recoilForce: 10
+  rotationRecoil: {x: 160, y: 20, z: 10}
+  positionRecoil: {x: 0.7, y: 0.6, z: -1.1}
+  randomness: 0.2
+  impactForce: 5
+  ammoType: {fileID: 11400000, guid: b6b15f64d2b0a2a48b9fd8588bd2a76b, type: 2}
+  defaultMuzzleFlash: {fileID: 0}

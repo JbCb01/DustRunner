@@ -3,20 +3,24 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class Equipable : MonoBehaviour, IInteractable
 {
-    [Header("Equipable Settings")]
-    public bool CanInteract => true;
+    [Header("Settings")]
     public EquipableData Data;
+
 
     private Rigidbody _rb;
     private Collider[] _colliders;
+    private Renderer[] _worldRenderers;
+    private GameObject _currentViewModel;
     private bool _hasOwner;
 
+    public bool CanInteract { get; } = true;
     public Player Player { get; private set; }
     
-    private void Awake()
+    public virtual void Awake()
     {
         _rb = GetComponent<Rigidbody>();
         _colliders = GetComponentsInChildren<Collider>();
+        _worldRenderers = GetComponentsInChildren<Renderer>();
     }
     public void AssignOwner(Player player)
     {
@@ -42,6 +46,8 @@ public class Equipable : MonoBehaviour, IInteractable
         if (!isEquipped)
         {
             transform.SetParent(null);
+            ToggleWorldVisuals(true);
+            DestroyViewModel();
         }
     }
 
@@ -49,10 +55,18 @@ public class Equipable : MonoBehaviour, IInteractable
     {
         if (!_hasOwner) return;
         gameObject.SetActive(true);
+
+        if (Data != null && Data.ViewModelPrefab != null)
+        {
+            ToggleWorldVisuals(false);
+            CreateViewModel();
+        }
     }
     public void OnUnequip()
     {
         gameObject.SetActive(false);
+        DestroyViewModel();
+        ToggleWorldVisuals(true);
     }
 
     public void Throw(Vector3 direction, float force)
@@ -61,15 +75,44 @@ public class Equipable : MonoBehaviour, IInteractable
         transform.SetParent(null);
         _rb.AddForce(direction * force, ForceMode.Impulse);
         _rb.AddTorque(Random.insideUnitSphere * force, ForceMode.Impulse);
-        
         Player = null;
         _hasOwner = false;
     }
 
+
+
     public virtual void UsePrimary() { }
     public virtual void UseSecondary() { }
-    public virtual string GetUIStatus() 
-    { 
-        return null; 
+    public virtual string GetUIStatus() { return null; }
+
+    public virtual void OnViewModelCreated(GameObject viewModel) { }
+
+    private void CreateViewModel()
+    {
+        if (_currentViewModel != null) return;
+
+        _currentViewModel = Instantiate(Data.ViewModelPrefab, transform);
+        _currentViewModel.transform.localPosition = Vector3.zero;
+        _currentViewModel.transform.localRotation = Quaternion.identity;
+
+        OnViewModelCreated(_currentViewModel);
+    }
+
+    private void DestroyViewModel()
+    {
+        if (_currentViewModel != null)
+        {
+            Destroy(_currentViewModel);
+            _currentViewModel = null;
+        }
+    }
+
+    private void ToggleWorldVisuals(bool state)
+    {
+        if (_worldRenderers == null) return;
+        foreach (var rend in _worldRenderers)
+        {
+            rend.enabled = state;
+        }
     }
 }

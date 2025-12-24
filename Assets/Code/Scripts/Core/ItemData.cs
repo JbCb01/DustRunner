@@ -10,6 +10,7 @@ public abstract class ItemData : ScriptableObject
 public class EquipableData : ItemData
 {
     public GameObject WorldPrefab;
+    public GameObject ViewModelPrefab;
 }
 
 [CreateAssetMenu(menuName = "DustRunner/Items/PickableData", fileName = "NewPickableData")]
