@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ced67e816e5246445ab5f9b234b3bf9d, type: 3}
+  m_Name: Level_1
+  m_EditorClassIdentifier: Assembly-CSharp::DustRunner.LevelGeneration.LevelConfiguration
+  StartRoomPrefab: {fileID: 5037285263307335649, guid: e49014cbe41d8ff4b86826627659eed2, type: 3}
+  EndingRoomPrefab: {fileID: 9069489036521714642, guid: 3c50e158e9e3344459a48955137312f8, type: 3}
+  RoomPrefabs:
+  - {fileID: 2069393805894232567, guid: 079298e08dc233f4ba769f8c3ad803c3, type: 3}
+  - {fileID: 890793620194634283, guid: 011e5497d8358d346b7f6c891d840f88, type: 3}
+  - {fileID: 7931977545095099856, guid: 237d1f8e89ce87547bac430aa9cd8e22, type: 3}
+  - {fileID: 4215033665620464838, guid: 8373501c4cd1c9e4db32a148ad0902a3, type: 3}
+  CorridorTiles:
+    Straight: {fileID: 3977852996776626659, guid: e3faec5cc08c6a54b8b34cc8a635236d, type: 3}
+    Corner: {fileID: 3288900081056384740, guid: 59ae265923c1ecd4ebc13f12c22d7abe, type: 3}
+    TJunction: {fileID: 668097068309997616, guid: a07f6d91413c92a4287ea1681ba1a705, type: 3}
+    Cross: {fileID: 6856649200968417425, guid: 3f0d2577006d68a43b51a03c31298d9c, type: 3}
+    DeadEnd: {fileID: 4639678169410631604, guid: 2fc5de25e96a92d4bad07c9280858878, type: 3}
+    DoorBlocker: {fileID: 107144784542096604, guid: 5c2098c148679da429c54c4b3fb54961, type: 3}
+  CorridorChance: 0.4
+  CapRoomChance: 0.7
+  MinRoomCount: 20
+  MaxStepsSafety: 100
+  GridScale: 5
+  Seed: 2
+  UseRandomSeed: 0
+  EnableShortcuts: 1
+  MaxShortcuts: 5
+  MaxShortcutLength: 10

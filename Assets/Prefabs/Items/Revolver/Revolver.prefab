@@ -165,5 +165,5 @@ MonoBehaviour:
   positionRecoil: {x: 0.7, y: 0.6, z: -1.1}
   randomness: 0.2
   impactForce: 5
-  ammoType: {fileID: 11400000, guid: b6b15f64d2b0a2a48b9fd8588bd2a76b, type: 2}
+  ammoType: {fileID: 0}
   defaultMuzzleFlash: {fileID: 0}

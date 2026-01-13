@@ -1,12 +1,35 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 namespace DustRunner.LevelGeneration
 {
+    [CreateAssetMenu(fileName = "NewLevelConfig", menuName = "DustRunner/Level Generation/Level Config")]
+    public class LevelConfiguration : ScriptableObject
+    {
+        [Header("Rooms and Corridors")]
+        public RoomTemplate StartRoomPrefab;
+        public RoomTemplate EndingRoomPrefab;
+        public List<RoomTemplate> RoomPrefabs;
+        public CorridorTileSet CorridorTiles;
+
+        [Header("Generation Settings")]
+        [Range(0f, 1f)] public float CorridorChance = 0.4f;
+        [Range(0f, 1f)] public float CapRoomChance = 0.5f;
+        public int MinRoomCount = 10;
+        public int MaxStepsSafety = 100;
+        public float GridScale = 5.0f;
+        public int Seed = 0;
+        public bool UseRandomSeed = true;
+
+        [Header("Shortcuts")]
+        public bool EnableShortcuts = true;
+        public int MaxShortcuts = 3;
+        public int MaxShortcutLength = 10;
+    }
+    
     public enum SocketDirection { North, South, East, West, Up, Down }
     public enum SocketType { Standard, Industrial, Security, Vertical }
-    
-    // Rozróżniamy, czym jest komórka w gridzie
     public enum NodeType { Empty, Room, Corridor }
 
     [Serializable]
@@ -16,6 +39,9 @@ namespace DustRunner.LevelGeneration
         public SocketDirection Direction;
         public SocketType Type;
 
+        [Header("Secret / Unique Room Data")]
+        public RoomTemplate UniqueRoomPrefab;
+        public float UniqueRoomChance = 0.1f;
         public Vector3Int GetDirectionVector()
         {
             return Direction switch
